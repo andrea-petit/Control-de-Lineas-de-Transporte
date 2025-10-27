@@ -11,8 +11,8 @@ def crear_usuario(id, nombre, email, password, rol='usuario'):
     db.session.commit()
     return u
 
-def verificar_login(email, password):
-    u = Usuario.query.filter_by(email=email).first()
+def verificar_login(id_usuario, password):
+    u = Usuario.query.filter(Usuario.id_usuario == id_usuario).first()
     if not u:
         return None
     if check_password_hash(u.password, password):

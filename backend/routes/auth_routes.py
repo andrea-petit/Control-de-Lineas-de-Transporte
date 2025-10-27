@@ -25,7 +25,7 @@ def login():
     data = request.get_json()
     if not data:
         return jsonify({"error":"sin cuerpo JSON"}), 400
-    u = verificar_login(data.get('email'), data.get('password'))
+    u = verificar_login(data.get('id_usuario'), data.get('password'))
     if not u:
         return jsonify({"error":"credenciales inválidas"}), 401
     # AQUI ES DONDE SE DEBERIA USAR JWT PARA GENERAR UN TOKEN 

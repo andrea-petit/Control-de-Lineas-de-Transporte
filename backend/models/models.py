@@ -9,6 +9,12 @@ class Usuario(db.Model):
     password = db.Column(db.String(255), nullable=False)  
     rol = db.Column(db.String(20), default='usuario') 
 
+class municicipio(db.Model):
+    __tablename__= 'municipios'
+    id_municipio = db.Column(db.Integer, primary_key=True)
+    nombre = db.Column(db.String(120), nullable=False)
+
+
 class LineaTransporte(db.Model):
     __tablename__ = 'lineas'
     id_linea = db.Column(db.Integer, primary_key=True)
@@ -16,6 +22,8 @@ class LineaTransporte(db.Model):
     nombre_propietario = db.Column(db.String(120), nullable=False)
     cedula_propietario = db.Column(db.String(50), unique=True)
     cantidad_vehiculos = db.Column(db.Integer, default=0)
+    id_municipio= db.Column(db.String(120), nullable=False)
+    municipio= db.relationship('municicipio', backref='lineas')
 
 class Chofer(db.Model):
     __tablename__ = 'choferes'
@@ -39,6 +47,8 @@ class Vehiculo(db.Model):
     estado = db.Column(db.String(50), default='activo')
     linea_id = db.Column(db.Integer, db.ForeignKey('lineas.id_linea'))
     linea = db.relationship('LineaTransporte', backref='vehiculos')
+
+
 
 class CambioLog(db.Model):
     __tablename__ = 'log_cambios'

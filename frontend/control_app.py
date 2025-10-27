@@ -4,7 +4,7 @@ from PySide6.QtCore import *
 from PySide6.QtGui import *
 #from __feature__ import true_property, snake_case
 
-SERVER_IP = "10.28.14.146"
+SERVER_IP = "192.168.0.103"
 PORT = 5000
 
 def detect_api_url():
@@ -75,9 +75,9 @@ class LoginWindow(QMainWindow):
         self.frameInputs.setGeometry(30,115,350,350)
         self.frameInputs.setStyleSheet("background: white; border-radius: 10px")
 
-        self.Email = QLineEdit()
-        self.Email.setPlaceholderText("Ingresa tu Email")
-        self.Email.setStyleSheet("background: LightBlue; color: black; padding: 10px; margin-top: 20px; font-size: 15px")
+        self.Id_usuario = QLineEdit()
+        self.Id_usuario.setPlaceholderText("Ingresa tu cédula")
+        self.Id_usuario.setStyleSheet("background: LightBlue; color: black; padding: 10px; margin-top: 20px; font-size: 15px")
 
         self.Password = QLineEdit()
         self.Password.setPlaceholderText("Ingresa tu Constraseña")
@@ -133,7 +133,7 @@ class LoginWindow(QMainWindow):
         self.layout = QVBoxLayout()
         self.layout.setContentsMargins(16,16,16,16)
         self.layout.setSpacing(10)
-        self.layout.addWidget(self.Email)
+        self.layout.addWidget(self.Id_usuario)
         self.layout.addWidget(self.Password)
         self.layout.addWidget(self.btnLogin)
         self.layout.addWidget(self.btnRegister)
@@ -150,7 +150,8 @@ class LoginWindow(QMainWindow):
 
 
     def do_register(self):
-        email = self.Email.text().strip()
+        #esto no sirve pero si lo quito no lo puedo correr por el boton <3
+        email = self.Id_usuario.text().strip()
         pw = self.Password.text().strip()
         if not email or not pw:
             QMessageBox.warning(self, "Error", "Completa ambos campos")
@@ -163,12 +164,12 @@ class LoginWindow(QMainWindow):
             QMessageBox.critical(self, "Error", f"No se pudo conectar: {e}")
 
     def do_login(self):
-        email = self.Email.text().strip()
+        id_usuario = self.Id_usuario.text().strip()
         pw = self.Password.text().strip()
-        if not email or not pw:
+        if not id_usuario or not pw:
             QMessageBox.warning(self, "Error", "Completa ambos campos")
             return
-        payload = {"email": email, "password": pw}
+        payload = {"id_usuario": id_usuario, "password": pw}
         try:
             r = requests.post(f"{API_BASE}/api/auth/login", json=payload, timeout=3)
             if r.status_code == 200:

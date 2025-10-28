@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from controllers.auth_controllers import crear_usuario, verificar_login
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 
 auth_bp = Blueprint('auth_bp', __name__)
 
@@ -23,10 +24,8 @@ def register():
 @auth_bp.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
-    if not data:
-        return jsonify({"error":"sin cuerpo JSON"}), 400
     u = verificar_login(data.get('id_usuario'), data.get('password'))
     if not u:
         return jsonify({"error":"credenciales inválidas"}), 401
-    # AQUI ES DONDE SE DEBERIA USAR JWT PARA GENERAR UN TOKEN 
-    return jsonify({"mensaje":"login correcto", "usuario": {"id": u.id_usuario, "nombre": u.nombre, "email": u.email, "rol": u.rol}}), 200
+    token = create_access_token(identity=u.id_usuario)
+    return jsonify({"mensaje":"login correcto","access_token": token}), 200

@@ -13,8 +13,6 @@ class municicipio(db.Model):
     __tablename__= 'municipios'
     id_municipio = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(120), nullable=False)
-
-
 class LineaTransporte(db.Model):
     __tablename__ = 'lineas'
     id_linea = db.Column(db.Integer, primary_key=True)
@@ -22,7 +20,7 @@ class LineaTransporte(db.Model):
     nombre_propietario = db.Column(db.String(120), nullable=False)
     cedula_propietario = db.Column(db.String(50), unique=True)
     cantidad_vehiculos = db.Column(db.Integer, default=0)
-    id_municipio= db.Column(db.String(120), nullable=False)
+    id_municipio= db.Column(db.Integer, db.ForeignKey('municipios.id_municipio'))
     municipio= db.relationship('municicipio', backref='lineas')
 
 class Chofer(db.Model):
@@ -45,6 +43,7 @@ class Vehiculo(db.Model):
     modalidad = db.Column(db.String(50))
     grupo = db.Column(db.String(50))
     estado = db.Column(db.String(50), default='activo')
+    combustible = db.Column(db.String(50))
     linea_id = db.Column(db.Integer, db.ForeignKey('lineas.id_linea'))
     linea = db.relationship('LineaTransporte', backref='vehiculos')
 
@@ -55,6 +54,6 @@ class CambioLog(db.Model):
     id_cambio= db.Column(db.Integer, primary_key=True)
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id_usuario'))
     tabla = db.Column(db.String(50))
-    registro_id = db.Column(db.Integer)
+    registro_id = db.Column(db.Integer) #no recuerdo para qué era esto, dios ayuda
     descripcion = db.Column(db.Text)
     fecha = db.Column(db.DateTime, default=datetime.utcnow)

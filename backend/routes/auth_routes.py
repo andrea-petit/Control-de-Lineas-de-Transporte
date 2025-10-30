@@ -27,5 +27,5 @@ def login():
     u = verificar_login(data.get('id_usuario'), data.get('password'))
     if not u:
         return jsonify({"error":"credenciales inválidas"}), 401
-    token = create_access_token(identity=u.id_usuario)
+    token = create_access_token(identity=str(u.id_usuario)) 
     return jsonify({"mensaje":"login correcto","access_token": token}), 200

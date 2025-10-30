@@ -53,7 +53,9 @@ class CambioLog(db.Model):
     __tablename__ = 'log_cambios'
     id_cambio= db.Column(db.Integer, primary_key=True)
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id_usuario'))
+    tipo_cambio= db.Column(db.String(10))
+    nombre_entidad= db.Column(db.String(120))
     tabla = db.Column(db.String(50))
-    registro_id = db.Column(db.Integer) #no recuerdo para qué era esto, dios ayuda
+    campo = db.Column(db.String(50))
     descripcion = db.Column(db.Text)
     fecha = db.Column(db.DateTime, default=datetime.utcnow)

@@ -2,7 +2,7 @@ import sys, socket, requests
 from PySide6.QtWidgets import *
 from PySide6.QtCore import *
 from PySide6.QtGui import *
-#from __feature__ import true_property, snake_case
+from styles import estilos_menu, btnStyle, estilos_login
 
 SERVER_IP = "192.168.0.103"
 PORT = 5000
@@ -24,101 +24,39 @@ def detect_api_url():
 
 API_BASE = detect_api_url()
 
-'''
-class LoginWindow(QWidget):
-    def __init__(self):
-        super(LoginWindow, self).__init__()
-        self.setWindowTitle("Login - Control Líneas")
-        self.setFixedSize(400,400)                  
-        self.label = QLabel("Control de Lineas de Transporte")
-        self.label.setStyleSheet('background: darkblue; color: white')
-        self.label.setAlignment(Qt.AlignCenter)
-        self.email = QLineEdit()
-        self.email.setPlaceholderText("email")
-        self.pw = QLineEdit()
-        self.pw.setPlaceholderText("contraseña")
-        self.pw.setEchoMode(QLineEdit.EchoMode.Password)
-        self.btn_login = QPushButton("Iniciar sesión")
-        self.btn_register = QPushButton("Registrar (prueba)")
-        self.btn_login.clicked.connect(self.do_login)
-        self.btn_register.clicked.connect(self.do_register)
-
-        layout = QVBoxLayout()
-        form = QFormLayout()
-        form.addRow("Email:", self.email)
-        form.addRow("Contraseña:", self.pw)
-        layout.addWidget(self.label)
-        layout.addLayout(form)
-        layout.addWidget(self.btn_login)
-        layout.addWidget(self.btn_register)
-        self.setLayout(layout)
-        layout.setAlignment(Qt.AlignJustify)
-'''
-
 class LoginWindow(QMainWindow):
-    def setup_ui(self):
-        self.setFixedSize(410,495)
+    def Login_ui(self):
+        self.setFixedSize(420,500)
         self.setWindowTitle("Login | Control de Lineas")
-        self.setStyleSheet("background: #011628")
+        self.setStyleSheet("background: #0B2E73")
 
 
         self.frameTitle = QFrame(self)
-        self.frameTitle.setGeometry(30,10,350,70)
-        self.frameTitle.setStyleSheet("background: white; color: black; border-radius: 10px; margin-top: 20px")
+        self.frameTitle.setGeometry(30,25,370,70)
+        self.frameTitle.setStyleSheet(estilos_login)
         self.titulo = QLabel("SISTEMA DE CONTROL DE TRANSPORTE", self.frameTitle)
-        self.titulo.setGeometry(0,0,350,70)
-        self.titulo.setAlignment(Qt.AlignCenter)
-        self.titulo.setStyleSheet("font-size: 15px; font-weight: bold; text-align: center")
+        self.titulo.setGeometry(0,0,370,70)
+        self.titulo.setAlignment(Qt.AlignVCenter | Qt.AlignHCenter)
+        self.titulo.setStyleSheet("font-size: px; font-weight: bolder")
 
 
         self.frameInputs = QFrame(self)
-        self.frameInputs.setGeometry(30,115,350,350)
+        self.frameInputs.setGeometry(30,115,370,350)
         self.frameInputs.setStyleSheet("background: white; border-radius: 10px")
 
         self.Id_usuario = QLineEdit()
         self.Id_usuario.setPlaceholderText("Ingresa tu cédula")
-        self.Id_usuario.setStyleSheet("background: LightBlue; color: black; padding: 10px; margin-top: 20px; font-size: 15px")
+        self.Id_usuario.setStyleSheet(estilos_login)
 
         self.Password = QLineEdit()
         self.Password.setPlaceholderText("Ingresa tu Constraseña")
         self.Password.setEchoMode(QLineEdit.EchoMode.Password)
-        self.Password.setStyleSheet("background: LightBlue; color: black; padding: 10px; margin-bottom: 10px; margin-top: 10px; font-size: 15px")
+        self.Password.setStyleSheet(estilos_login)
 
-        self.btnLogin = QPushButton("Iniciar Sesion")
-        #self.btnLogin.setStyleSheet("background: #012d51; color: white; padding: 10px")
-        self.btnRegister = QPushButton("Registrarse(Prueba)")
-        #self.btnRegister.setStyleSheet("background: #012d51; color: white; padding: 10px")
-        self.btnLogin.setObjectName("btnLogin")
-        self.btnRegister.setObjectName("btnRegister")
-
-        #self.textBtn = QLabel("CAREWEBO")
-        #self.textBtn.setStyleSheet("font-size: 10px; color: black")
-        #self.textBtn.setAlignment(Qt.AlignCenter)
+        self.btnLogin = QPushButton("Iniciar Sesion", objectName="btnLogin")
+        self.btnRegister = QPushButton("Registrarse(Prueba)", objectName="btnRegister")
 
 
-
-        btnStyle = '''
-        *{
-            transition: all linear 0.5ms;
-        }
-
-        QPushButton {
-            background: #012d51;
-            color: white;
-            padding: 10px;
-            border-radius: 10px;
-            border: none;
-            transition: all linear 1s;
-            font-size: 13px;
-        }
-
-        QPushButton:hover {
-            background: #024a7a
-        }
-
-        QPushButton:pressed {
-            background: #011826;
-'''
         self.btnLogin.setStyleSheet(btnStyle)
         self.btnRegister.setStyleSheet(btnStyle)
         self.btnLogin.setCursor(Qt.PointingHandCursor)
@@ -132,7 +70,7 @@ class LoginWindow(QMainWindow):
         # ---- Reemplazo: crear un widget contenedor dentro de frameInputs y asignarle el layout ----
         self.layout = QVBoxLayout()
         self.layout.setContentsMargins(16,16,16,16)
-        self.layout.setSpacing(10)
+        self.layout.setSpacing(15)
         self.layout.addWidget(self.Id_usuario)
         self.layout.addWidget(self.Password)
         self.layout.addWidget(self.btnLogin)
@@ -182,9 +120,11 @@ class LoginWindow(QMainWindow):
             QMessageBox.critical(self, "Error", f"No se pudo conectar: {e}")
 
 
+
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = LoginWindow()
-    window.setup_ui()
+    window.Login_ui()
     window.show()
     sys.exit(app.exec())

@@ -11,6 +11,7 @@ class MenuWindow(QMainWindow):
         self.setGeometry(150, 40, 1050, 670)
         self.setWindowTitle("Menu | Control de Lineas")
 
+        self.showMaximized()
 
         self.frame_window = QFrame()
         self.frame_buttons = QFrame()

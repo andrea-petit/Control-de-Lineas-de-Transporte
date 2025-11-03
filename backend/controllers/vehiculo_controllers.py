@@ -15,7 +15,7 @@ def listar_vehiculos_por_municipio(id_municipio):
 def obtener_vehiculo(id_vehiculo):
     return Vehiculo.query.get(id_vehiculo)
 
-def crear_vehiculo(placa, marca, modelo, capacidad, litraje, sindicato, modalidad, grupo, linea_id, combustible, usuario_id=None, descripcion=None):
+def crear_vehiculo(placa, marca, modelo, nombre_propietario, cedula_propietario, capacidad, litraje, sindicato, modalidad, grupo, linea_id, combustible, usuario_id=None, descripcion=None):
     if Vehiculo.query.filter_by(placa=placa).first():
         raise ValueError("Ya existe un vehículo con esa placa")
     
@@ -24,8 +24,8 @@ def crear_vehiculo(placa, marca, modelo, capacidad, litraje, sindicato, modalida
         raise ValueError("Línea de transporte no encontrada")
 
     nuevo = Vehiculo(
-        placa=placa, marca=marca, modelo=modelo, capacidad=capacidad,
-        litraje=litraje, sindicato=sindicato, modalidad=modalidad,
+        placa=placa, marca=marca, modelo=modelo, nombre_propietario= nombre_propietario, cedula_propietario=cedula_propietario, 
+        capacidad=capacidad, litraje=litraje, sindicato=sindicato, modalidad=modalidad,
         grupo=grupo, linea_id=linea_id, combustible=combustible
     )
 

@@ -39,10 +39,7 @@ def post_chofer():
         nuevo_chofer = crear_chofer(
             nombre=data['nombre'],
             cedula=data['cedula'],
-            telefono=data.get('telefono'),
-            direccion=data.get('direccion'),
-            vehiculo_id=data['vehiculo_id'],
-            descripcion=data.get('descripcion'),
+            id_vehiculo=data['id_vehiculo'],
             usuario_id=user_id  
         )
         return jsonify(model_to_dict(nuevo_chofer)), 201

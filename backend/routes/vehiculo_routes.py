@@ -44,6 +44,8 @@ def post_vehiculo():
             placa=data['placa'],
             marca=data.get('marca'),
             modelo=data.get('modelo'),
+            nombre_propietario=data['nombre_propietario'],
+            cedula_propietario=data['cedula_propietario'],
             capacidad=data.get('capacidad'),
             litraje=data.get('litraje'),
             sindicato=data.get('sindicato'),

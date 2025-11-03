@@ -12,13 +12,13 @@ def listar_choferes_por_vehiculo(id_vehiculo):
 def obtener_chofer(id_chofer):
     return Chofer.query.get(id_chofer)
 
-def crear_chofer(nombre, cedula, telefono, direccion, vehiculo_id, usuario_id=None, descripcion=None):
+def crear_chofer(nombre, cedula, id_vehiculo, usuario_id=None, descripcion=None):
     if Chofer.query.filter_by(cedula=cedula).first():
         raise ValueError("Ya existe un chofer con esa cédula")
     
     nuevo = Chofer(
-        nombre=nombre, cedula=cedula, telefono=telefono,
-        direccion=direccion, vehiculo_id=vehiculo_id
+        nombre=nombre, cedula=cedula,
+        id_vehiculo= id_vehiculo
     )
 
     db.session.add(nuevo)
@@ -31,7 +31,7 @@ def crear_chofer(nombre, cedula, telefono, direccion, vehiculo_id, usuario_id=No
         nombre_entidad=f'Chofer {nombre} {cedula}',
         tabla='choferes',
         campo=None,
-        descripcion= descripcion or 'Creación de nuevo chofer'
+        descripcion= 'Creación de nuevo chofer'
     )
 
     db.session.commit()

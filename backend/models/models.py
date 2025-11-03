@@ -17,8 +17,6 @@ class LineaTransporte(db.Model):
     __tablename__ = 'lineas'
     id_linea = db.Column(db.Integer, primary_key=True)
     nombre_organizacion = db.Column(db.String(120), nullable=False)
-    nombre_propietario = db.Column(db.String(120), nullable=False)
-    cedula_propietario = db.Column(db.String(50), unique=True)
     cantidad_vehiculos = db.Column(db.Integer, default=0)
     id_municipio= db.Column(db.Integer, db.ForeignKey('municipios.id_municipio'))
     municipio= db.relationship('municicipio', backref='lineas')
@@ -27,7 +25,7 @@ class Chofer(db.Model):
     __tablename__ = 'choferes'
     id_chofer = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(120), nullable=False)
-    cedula = db.Column(db.String(50), unique=True, nullable=False)
+    cedula = db.Column(db.Integer, unique=True, nullable=False)
     id_vehiculo= db.Column(db.Integer, db.ForeignKey('vehiculos.id_vehiculo'))
     vehiculo = db.relationship('Vehiculo', backref='choferes')
 
@@ -37,6 +35,8 @@ class Vehiculo(db.Model):
     placa = db.Column(db.String(30), unique=True, nullable=False)
     marca = db.Column(db.String(100))
     modelo = db.Column(db.String(100))
+    nombre_propietario = db.Column(db.String(120), nullable=False)
+    cedula_propietario = db.Column(db.String(50), unique=True)
     capacidad = db.Column(db.Integer)
     litraje = db.Column(db.Float)
     sindicato = db.Column(db.String(120))

@@ -1,5 +1,5 @@
 from models.models import LineaTransporte
-from log_utils import registrar_cambio
+from controllers.log_utils import registrar_cambio
 from config import db
 
 def listar_lineas():
@@ -8,11 +8,11 @@ def listar_lineas():
 def obtener_linea(id_linea):
     return LineaTransporte.query.get(id_linea)
 
-def crear_linea(nombre_organizacion, nombre_propietario, cedula_propietario, id_municipio, id_usuario):
+def crear_linea(nombre_organizacion, id_municipio, id_usuario):
     if LineaTransporte.query.filter_by(nombre_organizacion=nombre_organizacion).first():
         raise ValueError("Ya existe una línea con ese nombre")
     
-    nueva = LineaTransporte(nombre_organizacion=nombre_organizacion, nombre_propietario=nombre_propietario, cedula_propietario=cedula_propietario, id_municipio=id_municipio)
+    nueva = LineaTransporte(nombre_organizacion=nombre_organizacion, id_municipio=id_municipio)
     db.session.add(nueva)
 
     registrar_cambio(

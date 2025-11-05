@@ -5,6 +5,7 @@ from flask_jwt_extended import JWTManager
 from routes.auth_routes import auth_bp
 from routes.linea_routes import linea_bp
 from routes.vehiculo_routes import vehiculo_bp
+from routes.chofer_routes import chofer_bp
 import os
 
 def create_app():
@@ -17,6 +18,7 @@ def create_app():
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(linea_bp, url_prefix='/api')
     app.register_blueprint(vehiculo_bp, url_prefix='/api')
+    app.register_blueprint(chofer_bp, url_prefix='/api')
 
     app.config['JWT_SECRET_KEY'] = 'secret-key'
     jwt = JWTManager(app)

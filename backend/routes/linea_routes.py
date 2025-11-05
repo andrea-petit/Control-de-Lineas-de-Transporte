@@ -11,8 +11,6 @@ def get_lineas():
         {
             "id": l.id_linea,
             "nombre_organizacion": l.nombre_organizacion,
-            "nombre_propietario": l.nombre_propietario,
-            "cedula_propietario": l.cedula_propietario,
             "id_municipio": l.id_municipio
         }
         for l in lineas
@@ -29,8 +27,6 @@ def get_linea(id_linea):
     data = {
         "id": linea.id_linea,
         "nombre_organizacion": linea.nombre_organizacion,
-        "nombre_propietario": linea.nombre_propietario,
-        "cedula_propietario": linea.cedula_propietario,
         "id_municipio": linea.id_municipio
     }
 
@@ -49,8 +45,6 @@ def add_linea():
     try:
         nueva = crear_linea(
             data['nombre_organizacion'],
-            data['nombre_propietario'],
-            data['cedula_propietario'],
             data['id_municipio'],
             user_id
         )
@@ -94,15 +88,3 @@ def delete_linea(id_linea):
         return jsonify({"error": str(ve)}), 404
 
 
-# {
-#     "placa" : "IAO25A",
-#     "marca" : "FORD",
-#     "modelo": "FIESTA",
-#     "capacidad" : 5,
-#     "litraje": 40,
-#     "sindicato" : "no se bro",
-#     "modalidad" : "por puesto",
-#     "grupo": "a",
-#     "linea_id": 1,
-#     "combustible": "GASOLINa"
-# }

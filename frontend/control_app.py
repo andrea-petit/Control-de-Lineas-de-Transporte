@@ -29,7 +29,7 @@ class LoginWindow(QMainWindow):
     def setup_ui(self):
         self.setFixedSize(480,410)
         self.setWindowTitle("Login | Control de Lineas")
-        self.setStyleSheet("background: url(./frontend/Fondo.jpg)")
+        self.setStyleSheet("background: url(./frontend/img/Fondo.jpg)")
 
 
         self.frameTitle = QFrame(self)
@@ -41,7 +41,7 @@ class LoginWindow(QMainWindow):
         self.titulo.setStyleSheet("font-size: 15px; font-weight: bold;")
         self.frameLogo = QFrame(self.frameTitle)
         self.frameLogo.setGeometry(15,-21,90,130)
-        self.frameLogo.setStyleSheet("border-image: url(./frontend/Logo.png) 0 0 0 0 stretch stretch;")
+        self.frameLogo.setStyleSheet("border-image: url(./frontend/img/Logo.png) 0 0 0 0 stretch stretch;")
 
         self.frameInputs = QFrame(self)
         self.frameInputs.setGeometry(30,140,420,230)
@@ -70,7 +70,7 @@ class LoginWindow(QMainWindow):
         self.btnLogin.clicked.connect(self.do_login)
         #self.btnRegister.clicked.connect(self.do_register)
 
-        # ---- Reemplazo: crear un widget contenedor dentro de frameInputs y asignarle el layout ----
+
         self.layout = QVBoxLayout()
         self.layout.setContentsMargins(16,16,16,16)
         self.layout.setSpacing(15)
@@ -81,10 +81,10 @@ class LoginWindow(QMainWindow):
         #self.layout.addWidget(self.textBtn)
         self.layout.addStretch()
 
-        # hacer que el widget sea hijo del frameInputs para que se muestre dentro del frame
+
         self.widget = QWidget(self.frameInputs)
         self.widget.setLayout(self.layout)
-        # ocupar todo el frame (puedes ajustar si usas layouts en lugar de geometrías)
+        
         self.widget.setGeometry(0, 0, self.frameInputs.width(), self.frameInputs.height())
         
 

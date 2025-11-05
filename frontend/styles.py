@@ -11,8 +11,8 @@ estilos_menu = '''
     QPushButton {
     background: lightblue;
     color: black;
-    font-size: 20px;
-    font-weight: 500;
+    font-size: 18px;
+    font-weight: bold;
     text-align: center;
     }
 '''
@@ -32,14 +32,17 @@ estilos_login = '''
     }
 
     #frameTitle {
-    margin-top: 100px;}
+    margin-top: 100px;
+    border-radius: 10px;
+    
+    }
 
     QLineEdit {
     background: LightBlue;
     color: black;
     padding: 15px;
     font-size: 15px;
-    border-radius: 5px;
+    border-radius: 10px;
     }
 
     QLineEdit::placeholder {

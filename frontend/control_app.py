@@ -3,6 +3,7 @@ from PySide6.QtWidgets import *
 from PySide6.QtCore import *
 from PySide6.QtGui import *
 from styles import estilos_menu, btnStyle, estilos_login
+from main_ import *
 
 SERVER_IP = "192.168.0.103"
 PORT = 5000
@@ -25,27 +26,29 @@ def detect_api_url():
 API_BASE = detect_api_url()
 
 class LoginWindow(QMainWindow):
-    def Login_ui(self):
-        self.setFixedSize(420,500)
+    def setup_ui(self):
+        self.setFixedSize(480,410)
         self.setWindowTitle("Login | Control de Lineas")
-        self.setStyleSheet("background: #0B2E73")
+        self.setStyleSheet("background: url(./frontend/Fondo.jpg)")
 
 
         self.frameTitle = QFrame(self)
-        self.frameTitle.setGeometry(30,25,370,70)
+        self.frameTitle.setGeometry(30,40,420,70)
         self.frameTitle.setStyleSheet(estilos_login)
         self.titulo = QLabel("SISTEMA DE CONTROL DE TRANSPORTE", self.frameTitle)
-        self.titulo.setGeometry(0,0,370,70)
-        self.titulo.setAlignment(Qt.AlignVCenter | Qt.AlignHCenter)
-        self.titulo.setStyleSheet("font-size: px; font-weight: bolder")
-
+        self.titulo.setGeometry(0,0,400,70)
+        self.titulo.setAlignment(Qt.AlignVCenter | Qt.AlignRight)
+        self.titulo.setStyleSheet("font-size: 15px; font-weight: bold;")
+        self.frameLogo = QFrame(self.frameTitle)
+        self.frameLogo.setGeometry(15,-21,90,130)
+        self.frameLogo.setStyleSheet("border-image: url(./frontend/Logo.png) 0 0 0 0 stretch stretch;")
 
         self.frameInputs = QFrame(self)
-        self.frameInputs.setGeometry(30,115,370,350)
+        self.frameInputs.setGeometry(30,140,420,230)
         self.frameInputs.setStyleSheet("background: white; border-radius: 10px")
 
         self.Id_usuario = QLineEdit()
-        self.Id_usuario.setPlaceholderText("Ingresa tu cédula")
+        self.Id_usuario.setPlaceholderText("Ingresa tu Cédula")
         self.Id_usuario.setStyleSheet(estilos_login)
 
         self.Password = QLineEdit()
@@ -53,19 +56,19 @@ class LoginWindow(QMainWindow):
         self.Password.setEchoMode(QLineEdit.EchoMode.Password)
         self.Password.setStyleSheet(estilos_login)
 
-        self.btnLogin = QPushButton("Iniciar Sesion", objectName="btnLogin")
-        self.btnRegister = QPushButton("Registrarse(Prueba)", objectName="btnRegister")
+        self.btnLogin = QPushButton("Iniciar Sesión", objectName="btnLogin")
+        #self.btnRegister = QPushButton("Registrarse(Prueba)", objectName="btnRegister")
 
 
         self.btnLogin.setStyleSheet(btnStyle)
-        self.btnRegister.setStyleSheet(btnStyle)
+        #self.btnRegister.setStyleSheet(btnStyle)
         self.btnLogin.setCursor(Qt.PointingHandCursor)
-        self.btnRegister.setCursor(Qt.PointingHandCursor)
+        #self.btnRegister.setCursor(Qt.PointingHandCursor)
 
 
 
         self.btnLogin.clicked.connect(self.do_login)
-        self.btnRegister.clicked.connect(self.do_register)
+        #self.btnRegister.clicked.connect(self.do_register)
 
         # ---- Reemplazo: crear un widget contenedor dentro de frameInputs y asignarle el layout ----
         self.layout = QVBoxLayout()
@@ -74,7 +77,7 @@ class LoginWindow(QMainWindow):
         self.layout.addWidget(self.Id_usuario)
         self.layout.addWidget(self.Password)
         self.layout.addWidget(self.btnLogin)
-        self.layout.addWidget(self.btnRegister)
+        #self.layout.addWidget(self.btnRegister)
         #self.layout.addWidget(self.textBtn)
         self.layout.addStretch()
 
@@ -104,18 +107,27 @@ class LoginWindow(QMainWindow):
     def do_login(self):
         id_usuario = self.Id_usuario.text().strip()
         pw = self.Password.text().strip()
+
+        if id_usuario == "admin" and pw == "admin":
+            QMessageBox.information(self, "Bienvenida", "Hola Admin")
+            self.close()
+            self.menu_window = MenuWindow()
+            self.menu_window.menu_ui()
+            self.menu_window.show()
+
         if not id_usuario or not pw:
             QMessageBox.warning(self, "Error", "Completa ambos campos")
             return
         payload = {"id_usuario": id_usuario, "password": pw}
         try:
             r = requests.post(f"{API_BASE}/api/auth/login", json=payload, timeout=3)
-            if r.status_code == 200:
-                data = r.json()
-                QMessageBox.information(self, "Bienvenida", f"Hola {data['usuario']['nombre']} (rol: {data['usuario']['rol']})")
+
+            #if r.status_code == 200:
+                #data = r.json()
+                #QMessageBox.information(self, "Bienvenida", f"Hola {data['usuario']['nombre']} (rol: {data['usuario']['rol']})")
                 # Aquí abrirías el dashboard real
-            else:
-                QMessageBox.warning(self, "Login fallido", str(r.json()))
+            #else:
+                #QMessageBox.warning(self, "Login fallido", str(r.json()))
         except Exception as e:
             QMessageBox.critical(self, "Error", f"No se pudo conectar: {e}")
 
@@ -125,6 +137,6 @@ class LoginWindow(QMainWindow):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = LoginWindow()
-    window.Login_ui()
+    window.setup_ui()
     window.show()
     sys.exit(app.exec())

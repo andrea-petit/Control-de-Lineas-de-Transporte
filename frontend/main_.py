@@ -2,6 +2,7 @@ import sys, socket, requests
 from PySide6.QtWidgets import *
 from PySide6.QtCore import *
 from PySide6.QtGui import *
+from control_app import *
 
 from styles import estilos_menu
 
@@ -22,7 +23,7 @@ class MenuWindow(QMainWindow):
 
         # márgenes y separación para que quede ajustado
         self.root_layout.setContentsMargins(12,12,12,12)
-        self.root_layout.setSpacing(10)
+        self.root_layout.setSpacing(15)
 
         # limitar la altura del área de botones para que tengan una altura uniforme
         self.frame_buttons.setMaximumHeight(670)
@@ -37,23 +38,31 @@ class MenuWindow(QMainWindow):
 
     def setup_buttons_frames(self):
         self.button1 = QPushButton("Lineas")
-        self.button2 = QPushButton("Choferes")
-        self.button3 = QPushButton("")
-        self.button4 = QPushButton("")
+        self.button2 = QPushButton("Propietarios")
+        self.button3 = QPushButton("Choferes")
+        self.button4 = QPushButton("Vehiculos")
         self.button5 = QPushButton("")
+        #self.button5 = QPushButton("cerrar Sesion")
+        #self.button5.clicked.connect(self.close)
         
         #layout horizontal con separación y márgenes
         self.buttons_layout = QVBoxLayout()
         self.buttons_layout.setContentsMargins(4, 4, 4, 4)
-        self.buttons_layout.setSpacing(0)
+        self.buttons_layout.setSpacing(10)
         # que los botones ocupen el ancho disponible y tengan altura uniforme
         for btn in (self.button1, self.button2, self.button3, self.button4, self.button5):
             btn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-            btn.setFixedHeight(100)            # altura uniforme
+            btn.setFixedHeight(80)          # altura uniforme
             btn.setCursor(Qt.PointingHandCursor)
             self.buttons_layout.addWidget(btn)
         self.frame_buttons.setLayout(self.buttons_layout)
 
+
+    #def close(self):
+    #self.hide()
+    #self.login_window = LoginWindow()
+    #self.login_window.setup_ui()
+    #self.login_window.show()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

@@ -8,6 +8,9 @@ def listar_lineas():
 def obtener_linea(id_linea):
     return LineaTransporte.query.get(id_linea)
 
+def obtener_linea_por_municipio(id_municipio):
+    return LineaTransporte.query.filter_by(id_municipio=id_municipio).all()
+
 def crear_linea(nombre_organizacion, id_municipio, id_usuario):
     if LineaTransporte.query.filter_by(nombre_organizacion=nombre_organizacion).first():
         raise ValueError("Ya existe una línea con ese nombre")
@@ -48,21 +51,22 @@ def editar_linea(id_linea, campo, valor, id_usuario, descripcion):
     db.session.commit()
     return linea
 
-def eliminar_linea(id_linea, id_usuario, descripcion):
+def eliminar_linea(id_linea, descripcion=None, usuario_id=None):
     linea = LineaTransporte.query.get(id_linea)
     if not linea:
         raise ValueError("Línea no encontrada")
-    
-    nombre_organizacion = getattr(linea, 'nombre_organizacion', None)
+
+    nombre = getattr(linea, 'nombre_organizacion', None)
 
     registrar_cambio(
-        usuario_id=id_usuario,
+        usuario_id=usuario_id,
         tipo_cambio='eliminar',
-        nombre_entidad=f'Línea {nombre_organizacion}',
+        nombre_entidad=f'Línea {nombre}',
         tabla='lineas_transporte',
         campo=None,
-        descripcion= descripcion or 'Eliminación de línea de transporte'
+        descripcion=descripcion or 'Eliminación de línea'
     )
-    
+
     db.session.delete(linea)
     db.session.commit()
+    return True

@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from controllers.linea_controllers import listar_lineas, obtener_linea, crear_linea, editar_linea, eliminar_linea
+from controllers.linea_controllers import listar_lineas, obtener_linea, crear_linea, editar_linea, eliminar_linea, obtener_linea_por_municipio
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 linea_bp = Blueprint('linea_bp', __name__)
@@ -30,6 +30,19 @@ def get_linea(id_linea):
         "id_municipio": linea.id_municipio
     }
 
+    return jsonify(data), 200
+
+@linea_bp.route('/lineas/municipio/<int:id_municipio>', methods=['GET'])
+def get_lineas_por_municipio(id_municipio):
+    lineas = obtener_linea_por_municipio(id_municipio)
+    data = [
+        {
+            "id": l.id_linea,
+            "nombre_organizacion": l.nombre_organizacion,
+            "id_municipio": l.id_municipio
+        }
+        for l in lineas
+    ]
     return jsonify(data), 200
 
 
@@ -76,13 +89,16 @@ def update_linea(id_linea):
 @linea_bp.route('/lineas/<int:id_linea>', methods=['DELETE'])
 @jwt_required()
 def delete_linea(id_linea):
-    raw_id = get_jwt_identity()
+    data = request.get_json(silent=True) or {}
+    descripcion = data.get('descripcion')
+    user_raw = get_jwt_identity()
     try:
-        user_id = int(raw_id) if raw_id is not None else None
-    except (TypeError, ValueError):
-        user_id = raw_id
+        user_id = int(user_raw) if user_raw is not None else None
+    except Exception:
+        user_id = user_raw
+
     try:
-        eliminar_linea(id_linea, user_id, descripcion=request.json.get('descripcion'))
+        eliminar_linea(id_linea, descripcion=descripcion, usuario_id=user_id)
         return jsonify({"mensaje": "Línea eliminada"}), 200
     except ValueError as ve:
         return jsonify({"error": str(ve)}), 404

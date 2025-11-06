@@ -3,32 +3,14 @@ from PySide6.QtWidgets import *
 from PySide6.QtCore import *
 from PySide6.QtGui import *
 from styles import estilos_menu, btnStyle, estilos_login
-from main_ import *
-
-SERVER_IP = "192.168.0.103"
-PORT = 5000
-
-def detect_api_url():
-    try:
-        r = requests.get(f"http://127.0.0.1:{PORT}/api/auth/ping", timeout=0.8)
-        if r.ok:
-            return f"http://127.0.0.1:{PORT}"
-    except:
-        pass
-    try:
-        r = requests.get(f"http://{SERVER_IP}:{PORT}/api/auth/ping", timeout=1.0)
-        if r.ok:
-            return f"http://{SERVER_IP}:{PORT}"
-    except:
-        pass
-    return f"http://{SERVER_IP}:{PORT}"
-
-API_BASE = detect_api_url()
+import requests
+from app_state import API_BASE, GlobalState
 
 class LoginWindow(QMainWindow):
     def setup_ui(self):
         self.setFixedSize(480,410)
         self.setWindowTitle("Login | Control de Lineas")
+        self.setWindowIcon(QIcon("frontend/autobus.png"))
         self.setStyleSheet("background: url(./frontend/Fondo.jpg)")
 
 
@@ -105,37 +87,58 @@ class LoginWindow(QMainWindow):
             QMessageBox.critical(self, "Error", f"No se pudo conectar: {e}")
 
     def do_login(self):
-        id_usuario = self.Id_usuario.text().strip()
-        pw = self.Password.text().strip()
-
-        if id_usuario == "admin" and pw == "admin":
-            QMessageBox.information(self, "Bienvenida", "Hola Admin")
-            self.close()
-            self.menu_window = MenuWindow()
-            self.menu_window.menu_ui()
-            self.menu_window.show()
-
-        if not id_usuario or not pw:
-            QMessageBox.warning(self, "Error", "Completa ambos campos")
+        cedula = self.Id_usuario.text().strip()
+        pwd = self.Password.text().strip()
+        if not cedula or not pwd:
+            QMessageBox.warning(self, "Aviso", "Ingrese cédula y contraseña")
             return
-        payload = {"id_usuario": id_usuario, "password": pw}
-        try:
-            r = requests.post(f"{API_BASE}/api/auth/login", json=payload, timeout=3)
 
-            #if r.status_code == 200:
-                #data = r.json()
-                #QMessageBox.information(self, "Bienvenida", f"Hola {data['usuario']['nombre']} (rol: {data['usuario']['rol']})")
-                # Aquí abrirías el dashboard real
-            #else:
-                #QMessageBox.warning(self, "Login fallido", str(r.json()))
+        try:
+            r = requests.post(f"{API_BASE}/api/auth/login", json={"id_usuario": cedula, "password": pwd}, timeout=6)
         except Exception as e:
-            QMessageBox.critical(self, "Error", f"No se pudo conectar: {e}")
+            QMessageBox.critical(self, "Error", f"No se pudo conectar al servidor: {e}")
+            return
+
+        if r.ok:
+            token = r.json().get("access_token")
+            if token:
+                # guardar token globalmente para usar en otros dialogs
+                GlobalState.token = token
+                QMessageBox.information(self, "OK", "Login correcto")
+
+                # abrir ventana principal (import lazy para evitar import circular)
+                try:
+                    from main_ import MenuWindow
+                except Exception:
+                    QMessageBox.critical(self, "Error", "No se pudo abrir la ventana principal (import failed).")
+                    return
+
+                # ocultar login y mostrar menu; guardar referencia para que no sea recolectado
+                self.hide()
+                self.main_window = MenuWindow()
+                try:
+                    self.main_window.menu_ui()
+                except Exception:
+                    # si MenuWindow ya está listo con setup en __init__, ignore
+                    pass
+                self.main_window.show()
+                
+            else:
+                QMessageBox.critical(self, "Error", "Respuesta inválida del servidor (no token)")
+        else:
+            try:
+                msg = r.json()
+            except:
+                msg = r.text
+            QMessageBox.warning(self, "Login fallido", str(msg))
+
 
 
 
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    app.setWindowIcon(QIcon("autobus.png")) 
     window = LoginWindow()
     window.setup_ui()
     window.show()

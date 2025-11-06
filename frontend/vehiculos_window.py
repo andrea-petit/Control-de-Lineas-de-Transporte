@@ -73,6 +73,7 @@ class VehiculosWindow(QWidget):
             except Exception:
                 pass
 
+
         # self.tabla.setStyleSheet("""
         #     QHeaderView::section {
         #         background-color: #b3ccff;
@@ -97,12 +98,8 @@ class VehiculosWindow(QWidget):
             }
             QHeaderView::section {
                 background-color: #e3e9f5;
-                padding: 6px;
                 border: 1px solid #c7cdd8;
                 font-weight: bold;
-            }
-            QTableWidget::item {
-                padding: 4px;
             }
         """)
 
@@ -113,7 +110,7 @@ class VehiculosWindow(QWidget):
         self.btn_agregar = QPushButton("Agregar Vehículo")
         self.btn_agregar.clicked.connect(self.agregar_vehiculo)
         btns.addWidget(self.btn_agregar)
-        btns.addStretch()
+        # btns.addStretch()
         layout.addLayout(btns)
 
         # paleta/estilo coherente con lineas
@@ -139,7 +136,6 @@ class VehiculosWindow(QWidget):
         except Exception as e:
             QMessageBox.critical(self, "Error", f"No se pudo conectar: {e}")
 
-    # -------------------------------------------------------------------------
     def cargar_vehiculos_por_linea(self):
         linea_id = self.combo_lineas.currentData()
         nombre = self.combo_lineas.currentText()
@@ -161,9 +157,7 @@ class VehiculosWindow(QWidget):
         except Exception as e:
             QMessageBox.critical(self, "Error", f"No se pudo conectar: {e}")
 
-    # -------------------------------------------------------------------------
     def mostrar_vehiculos(self, vehiculos):
-        # Espera lista de dicts. Cada dict puede usar claves id_vehiculo / id, linea_id / id_linea
         self.tabla.setRowCount(0)
         for row, v in enumerate(vehiculos):
             vid = v.get("id_vehiculo", v.get("id"))

@@ -9,8 +9,6 @@ estilos_menu = '''
     }
 
     QPushButton {
-    margin: 15px;
-    padding: 18px;
     background: lightblue;
     color: black;
     font-size: 18px;

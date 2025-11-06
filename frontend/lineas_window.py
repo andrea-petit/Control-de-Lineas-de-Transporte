@@ -93,9 +93,6 @@ class LineasWindow(QWidget):
                 border: 1px solid #c7cdd8;
                 font-weight: bold;
             }
-            QTableWidget::item {
-                padding: 4px;
-            }
         """)
 
         layout.addWidget(self.tabla)
@@ -119,7 +116,7 @@ class LineasWindow(QWidget):
         self.btn_agregar.clicked.connect(self.agregar_linea)
 
         btn_layout.addWidget(self.btn_agregar)
-        btn_layout.addStretch()
+        # btn_layout.addStretch()
         layout.addLayout(btn_layout)
 
         pal = self.palette()

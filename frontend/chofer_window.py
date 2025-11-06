@@ -55,6 +55,7 @@ class ChoferesWindow(QWidget):
         self.tabla.setColumnWidth(1,260)
         self.tabla.setColumnWidth(2,140)
         self.tabla.setColumnWidth(3,240)
+        self.tabla.setColumnWidth(4,800)
         self.tabla.setColumnHidden(0, True)
 
         self.tabla.setStyleSheet("""
@@ -71,9 +72,6 @@ class ChoferesWindow(QWidget):
                 border: 1px solid #c7cdd8;
                 font-weight: bold;
             }
-            QTableWidget::item {
-                padding: 4px;
-            }
         """)
 
         layout.addWidget(self.tabla)
@@ -82,7 +80,7 @@ class ChoferesWindow(QWidget):
         self.btn_agregar = QPushButton("Agregar Chofer")
         self.btn_agregar.clicked.connect(self.agregar_chofer)
         btns.addWidget(self.btn_agregar)
-        btns.addStretch()
+        # btns.addStretch()
         layout.addLayout(btns)
 
         pal = self.palette()
@@ -144,6 +142,38 @@ class ChoferesWindow(QWidget):
                 btn.setFixedSize(70,28)
                 btn_editar.setStyleSheet("background-color: #2a4d69; color: white; border-radius: 4px;")
                 btn_eliminar.setStyleSheet("background-color: #2a4d69; color: white; border-radius: 4px;")
+                
+                btn.setCursor(Qt.PointingHandCursor)
+
+
+            btn_editar.clicked.connect(lambda _, _id=cid: self.editar_chofer(_id))
+            btn_eliminar.clicked.connect(lambda _, _id=cid: self.eliminar_chofer(_id))
+
+            action_layout = QHBoxLayout()
+            action_layout.setContentsMargins(2,2,2,2)
+            action_layout.addWidget(btn_editar)
+            action_layout.addWidget(btn_eliminar)
+            action_widget = QWidget()
+            action_widget.setLayout(action_layout)
+            self.tabla.setCellWidget(row, 4, action_widget)
+
+    def mostrar_choferes(self, choferes):
+        self.tabla.setRowCount(0)
+        for row, c in enumerate(choferes):
+            self.tabla.insertRow(row)
+            cid = c.get("id_chofer", c.get("id"))
+            nombre = c.get("nombre","")
+            cedula = str(c.get("cedula",""))
+            vehiculo = str(c.get("id_vehiculo",""))
+            self.tabla.setItem(row, 0, QTableWidgetItem(str(cid)))
+            self.tabla.setItem(row, 1, QTableWidgetItem(nombre))
+            self.tabla.setItem(row, 2, QTableWidgetItem(cedula))
+            self.tabla.setItem(row, 3, QTableWidgetItem(vehiculo))
+
+            btn_editar = QPushButton("Editar")
+            btn_eliminar = QPushButton("Eliminar")
+            for btn in (btn_editar, btn_eliminar):
+                btn.setFixedSize(70,28)
                 btn.setCursor(Qt.PointingHandCursor)
             btn_editar.clicked.connect(lambda _, _id=cid: self.editar_chofer(_id))
             btn_eliminar.clicked.connect(lambda _, _id=cid: self.eliminar_chofer(_id))

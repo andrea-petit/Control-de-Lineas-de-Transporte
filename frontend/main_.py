@@ -21,6 +21,8 @@ class MenuWindow(QMainWindow):
         self.frame_window = QFrame()
         self.frame_window.setLayout(QVBoxLayout())
         self.frame_buttons = QFrame()
+        # header frame (se usa para el título y controles superiores)
+        self.frame_header = QFrame()
 
         self.root_layout = QHBoxLayout()
         self.right_container = QWidget()
@@ -90,7 +92,7 @@ class MenuWindow(QMainWindow):
         title_layout.setSpacing(4)
 
 
-        title = QLabel("Institución Municipal de Tránsito y Transporte")
+        title = QLabel("Instituto Municipal de Tránsito y Transporte")
         title.setStyleSheet("font-size: 22px; font-weight: bold; color: #111;")
         title.setAlignment(Qt.AlignCenter)
 

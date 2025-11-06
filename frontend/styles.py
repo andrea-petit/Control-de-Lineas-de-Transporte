@@ -1,5 +1,5 @@
 estilos_menu = '''
-    QWidget {
+    #centralwidget {
     background: #0B2E73;
     }
 
@@ -9,12 +9,15 @@ estilos_menu = '''
     }
 
     QPushButton {
+    margin: 15px;
+    padding: 18px;
     background: lightblue;
     color: black;
     font-size: 18px;
     font-weight: bold;
     text-align: center;
     }
+
 '''
 
 estilos_login = '''

@@ -6,7 +6,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor, QPalette
 from app_state import API_BASE, GlobalState
-from vehiculo_dialog import VehiculoDialog
+from dialogs.vehiculo_dialog import VehiculoDialog
 
 
 class VehiculosWindow(QWidget):

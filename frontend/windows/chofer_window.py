@@ -6,7 +6,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor, QPalette
 from app_state import API_BASE, GlobalState
-from chofer_dialog import ChoferDialog
+from dialogs.chofer_dialog import ChoferDialog
 
 class ChoferesWindow(QWidget):
     def __init__(self):

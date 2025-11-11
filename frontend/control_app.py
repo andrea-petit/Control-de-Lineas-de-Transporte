@@ -10,7 +10,7 @@ class LoginWindow(QMainWindow):
     def setup_ui(self):
         self.setFixedSize(480,410)
         self.setWindowTitle("Login | Control de Lineas")
-        self.setWindowIcon(QIcon("frontend/autobus.png"))
+        self.setWindowIcon(QIcon("frontend/img/autobus.png"))
         self.setStyleSheet("background: url(./frontend/Fondo.jpg)")
         self.setStyleSheet("background: url(./frontend/img/Fondo.jpg)")
 
@@ -71,21 +71,78 @@ class LoginWindow(QMainWindow):
         self.widget.setGeometry(0, 0, self.frameInputs.width(), self.frameInputs.height())
         
 
+# Comentado pq solo el admin debe manejar la función 
 
 
-    def do_register(self):
-        #esto no sirve pero si lo quito no lo puedo correr por el boton <3
-        email = self.Id_usuario.text().strip()
-        pw = self.Password.text().strip()
-        if not email or not pw:
-            QMessageBox.warning(self, "Error", "Completa ambos campos")
-            return
-        payload = {"nombre": email.split("@")[0], "email": email, "password": pw, "rol": "usuario"}
-        try:
-            r = requests.post(f"{API_BASE}/api/auth/register", json=payload, timeout=3)
-            QMessageBox.information(self, "Registro", str(r.json()))
-        except Exception as e:
-            QMessageBox.critical(self, "Error", f"No se pudo conectar: {e}")
+    # def do_register(self):
+    #     #esto no sirve pero si lo quito no lo puedo correr por el boton <3
+    #     email = self.Id_usuario.text().strip()
+    #     pw = self.Password.text().strip()
+    #     if not email or not pw:
+    #         QMessageBox.warning(self, "Error", "Completa ambos campos")
+    #         return
+    #     payload = {"nombre": email.split("@")[0], "email": email, "password": pw, "rol": "usuario"}
+    #     try:
+    #         r = requests.post(f"{API_BASE}/api/auth/register", json=payload, timeout=3)
+    #         QMessageBox.information(self, "Registro", str(r.json()))
+    #     except Exception as e:
+    #         QMessageBox.critical(self, "Error", f"No se pudo conectar: {e}")
+
+    # def do_login(self):
+    #     cedula = self.Id_usuario.text().strip()
+    #     pwd = self.Password.text().strip()
+    #     if not cedula or not pwd:
+    #         QMessageBox.warning(self, "Aviso", "Ingrese cédula y contraseña")
+    #         return
+
+    #     try:
+    #         r = requests.post(f"{API_BASE}/api/auth/login", json={"id_usuario": cedula, "password": pwd}, timeout=6)
+    #         admin = requests.get(f"{API_BASE}/api/auth/is_admin")
+    #         if admin.ok:
+    #             is_admin = admin.json().get("is_admin", False)
+    #             GlobalState.is_admin = is_admin
+                
+    #     except Exception as e:
+    #         QMessageBox.critical(self, "Error", f"No se pudo conectar al servidor: {e}")
+    #         return
+
+    #     if r.ok:
+    #         token = r.json().get("access_token")
+    #         if token:
+    #             GlobalState.token = token
+
+    #             try:
+    #                 headers = {"Authorization": f"Bearer {token}"}
+    #                 admin = requests.get(f"{API_BASE}/api/auth/is_admin", headers=headers, timeout=3)
+    #                 GlobalState.is_admin = True if admin.ok and admin.json().get("is_admin") else False
+    #             except Exception:
+    #                 GlobalState.is_admin = False
+
+    #             QMessageBox.information(self, "OK", "Login correcto")
+                
+    #             try:
+    #                 from main_ import MenuWindow
+    #             except Exception:
+    #                 QMessageBox.critical(self, "Error", "No se pudo abrir la ventana principal (import failed).")
+    #                 return
+
+    #             self.hide()
+    #             self.main_window = MenuWindow()
+    #             try:
+    #                 self.main_window.menu_ui()
+    #             except Exception:
+    #                 pass
+    #             self.main_window.show()
+                
+    #         else:
+    #             QMessageBox.critical(self, "Error", "Respuesta inválida del servidor (no token)")
+    #     else:
+    #         try:
+    #             msg = r.json()
+    #         except:
+    #             msg = r.text
+    #         QMessageBox.warning(self, "Login fallido", str(msg))
+
 
     def do_login(self):
         cedula = self.Id_usuario.text().strip()
@@ -100,46 +157,47 @@ class LoginWindow(QMainWindow):
             QMessageBox.critical(self, "Error", f"No se pudo conectar al servidor: {e}")
             return
 
-        if r.ok:
-            token = r.json().get("access_token")
-            if token:
-                # guardar token globalmente para usar en otros dialogs
-                GlobalState.token = token
-                QMessageBox.information(self, "OK", "Login correcto")
-
-                # abrir ventana principal (import lazy para evitar import circular)
-                try:
-                    from main_ import MenuWindow
-                except Exception:
-                    QMessageBox.critical(self, "Error", "No se pudo abrir la ventana principal (import failed).")
-                    return
-
-                # ocultar login y mostrar menu; guardar referencia para que no sea recolectado
-                self.hide()
-                self.main_window = MenuWindow()
-                try:
-                    self.main_window.menu_ui()
-                except Exception:
-                    # si MenuWindow ya está listo con setup en __init__, ignore
-                    pass
-                self.main_window.show()
-                
-            else:
-                QMessageBox.critical(self, "Error", "Respuesta inválida del servidor (no token)")
-        else:
+        if not r.ok:
             try:
                 msg = r.json()
             except:
                 msg = r.text
             QMessageBox.warning(self, "Login fallido", str(msg))
+            return
 
+        data = r.json()
+        token = data.get("access_token")
+        rol = data.get("rol", "usuario")
+
+        if not token:
+            QMessageBox.critical(self, "Error", "Respuesta inválida del servidor (no token)")
+            return
+
+        GlobalState.token = token
+        GlobalState.is_admin = (rol.lower() == "admin")
+
+        QMessageBox.information(self, "OK", "Login correcto")
+        
+        try:
+            from main_ import MenuWindow
+        except Exception:
+            QMessageBox.critical(self, "Error", "No se pudo abrir la ventana principal (import failed).")
+            return
+
+        self.hide()
+        self.main_window = MenuWindow()
+        try:
+            self.main_window.menu_ui()
+        except Exception:
+            pass
+        self.main_window.show()
 
 
 
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    app.setWindowIcon(QIcon("autobus.png")) 
+    app.setWindowIcon(QIcon("frontend/img/autobus.png")) 
     window = LoginWindow()
     window.setup_ui()
     window.show()

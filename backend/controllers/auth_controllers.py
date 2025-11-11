@@ -19,3 +19,8 @@ def verificar_login(id_usuario, password):
         return u
     return None
 
+def is_admin(id_usuario):
+    u = Usuario.query.filter(Usuario.id_usuario == id_usuario).first()
+    if u and u.rol == 'admin':
+        return True
+    return False

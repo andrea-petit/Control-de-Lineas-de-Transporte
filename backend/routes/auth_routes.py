@@ -27,5 +27,19 @@ def login():
     u = verificar_login(data.get('id_usuario'), data.get('password'))
     if not u:
         return jsonify({"error":"credenciales inválidas"}), 401
-    token = create_access_token(identity=str(u.id_usuario)) 
-    return jsonify({"mensaje":"login correcto","access_token": token}), 200
+    token = create_access_token(identity=str(u.id_usuario))
+    rol= u.rol 
+    return jsonify({"mensaje":"login correcto","access_token": token, "rol": rol }), 200
+
+@auth_bp.route('/auth/is_admin', methods=['GET'])
+@jwt_required()
+def is_admin():
+    raw_id = get_jwt_identity()
+    try:
+        user_id = int(raw_id) if raw_id is not None else None
+    except (TypeError, ValueError):
+        user_id = raw_id
+
+    from controllers.auth_controllers import obtener_usuario_por_id
+    usuario = obtener_usuario_por_id(user_id)  # usa tu función existente
+    return jsonify({"is_admin": bool(usuario and usuario.rol == "admin")}), 200

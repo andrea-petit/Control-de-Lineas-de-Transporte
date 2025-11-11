@@ -2,10 +2,11 @@ import sys, socket, requests
 from PySide6.QtWidgets import *
 from PySide6.QtCore import *
 from PySide6.QtGui import *
-from lineas_window import LineasWindow
-from vehiculos_window import VehiculosWindow
-from chofer_window import ChoferesWindow
-from cambios_window import CambiosWindow
+from windows.lineas_window import LineasWindow
+from windows.vehiculos_window import VehiculosWindow
+from windows.chofer_window import ChoferesWindow
+from windows.cambios_window import CambiosWindow
+from app_state import API_BASE, GlobalState 
 
 from styles import estilos_menu
 
@@ -14,7 +15,7 @@ class MenuWindow(QMainWindow):
     def menu_ui(self):
         self.setGeometry(150, 40, 1050, 670)
         self.setWindowTitle("Menu | Control de Lineas")
-        self.setWindowIcon(QIcon("frontend/autobus.png"))
+        self.setWindowIcon(QIcon("frontend/img/autobus.png"))
 
         self.showMaximized()
 
@@ -35,8 +36,8 @@ class MenuWindow(QMainWindow):
         self.right_layout.addWidget(self.frame_header)
         self.right_layout.addWidget(self.frame_window)
 
-        self.root_layout.addWidget(self.frame_buttons, 15)
-        self.root_layout.addWidget(self.right_container, 85)
+        self.root_layout.addWidget(self.frame_buttons, 10)
+        self.root_layout.addWidget(self.right_container, 90)
 
         self.root_layout.setContentsMargins(12,12,12,12)
         self.root_layout.setSpacing(15)
@@ -58,8 +59,8 @@ class MenuWindow(QMainWindow):
         self.button2 = QPushButton("Vehiculos")
         self.button3 = QPushButton("Choferes")
         self.button4 = QPushButton("Cambios")
-        self.button5 = QPushButton("")
-        self.button6 = QPushButton("")
+        self.button5 = QPushButton("Generar Archivo")
+        self.button6 = QPushButton("Administrar Usuarios")
         #self.button5 = QPushButton("cerrar Sesion")
         #self.button5.clicked.connect(self.close)
 
@@ -67,6 +68,8 @@ class MenuWindow(QMainWindow):
         self.button2.clicked.connect(self.cargar_vehiculos_por_linea)
         self.button3.clicked.connect(self.abrir_choferes)
         self.button4.clicked.connect(self.abrir_cambios)
+
+        self.button6.setVisible(GlobalState.is_admin)
         
         #layout horizontal con separación y márgenes
         self.buttons_layout = QVBoxLayout()
@@ -161,10 +164,12 @@ class MenuWindow(QMainWindow):
         self.cambios_window = CambiosWindow()
         layout.addWidget(self.cambios_window)
 
+
+
 if __name__ == "__main__":
     from control_app import LoginWindow 
     app = QApplication(sys.argv)
-    app.setWindowIcon(QIcon("frontend/bus.png")) 
+    app.setWindowIcon(QIcon("frontend/img/bus.png")) 
     window = MenuWindow()
     window.menu_ui()
     window.show()

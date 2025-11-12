@@ -11,7 +11,7 @@ vehiculo_bp = Blueprint('vehiculo_bp', __name__)
 @vehiculo_bp.route('/vehiculos', methods=['GET'])
 def get_vehiculos():
     vehiculos = listar_vehiculos()
-    return jsonify([model_to_dict(v) for v in vehiculos]), 200
+    return jsonify(vehiculos), 200
 
 @vehiculo_bp.route('/vehiculos/linea/<int:id_linea>', methods=['GET'])
 def get_vehiculos_por_linea(id_linea):

@@ -58,7 +58,7 @@ class VehiculosWindow(QWidget):
         columns = [
             "Id", "Placa", "Marca", "Modelo", "Propietario", "Cédula",
             "Capacidad", "Litraje", "Sindicato", "Modalidad", "Grupo",
-            "Combustible", "Línea", "Acciones"
+            "Combustible", "Línea", "Estado", "Acciones"
         ]
         self.tabla.setColumnCount(len(columns))
         self.tabla.setHorizontalHeaderLabels(columns)
@@ -73,20 +73,6 @@ class VehiculosWindow(QWidget):
             except Exception:
                 pass
 
-
-        # self.tabla.setStyleSheet("""
-        #     QHeaderView::section {
-        #         background-color: #b3ccff;
-        #         color: #002b80;
-        #         font-weight: bold;
-        #         padding: 5px;
-        #     }
-        #     QTableWidget {
-        #         background-color: #f8fbff;
-        #         border: 1px solid #a3c2ff;
-        #         gridline-color: #a3c2ff;
-        #     }
-        # """)
 
         self.tabla.setStyleSheet("""
             QTableWidget {
@@ -174,7 +160,8 @@ class VehiculosWindow(QWidget):
             modalidad = v.get("modalidad", "")
             grupo = v.get("grupo", "")
             combustible = v.get("combustible", "")
-            linea_nombre = v.get("nombre_linea") or v.get("nombre_organizacion") or str(v.get("linea_id", v.get("id_linea", "")))
+            linea_nombre = v.get("linea_nombre_organizacion") or v.get("nombre_organizacion") or str(v.get("linea_id", v.get("id_linea", "")))
+            estado = v.get("estado", "")
 
             items = [
                 str(vid or ""),
@@ -189,7 +176,8 @@ class VehiculosWindow(QWidget):
                 modalidad,
                 grupo,
                 combustible,
-                str(linea_nombre)
+                str(linea_nombre),
+                estado
             ]
 
             for col, text in enumerate(items):

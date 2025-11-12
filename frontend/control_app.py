@@ -8,12 +8,10 @@ from app_state import API_BASE, GlobalState
 
 class LoginWindow(QMainWindow):
     def setup_ui(self):
-        self.setFixedSize(480,410)
+        self.setFixedSize(490,410)
         self.setWindowTitle("Login | Control de Lineas")
         self.setWindowIcon(QIcon("frontend/img/autobus.png"))
-        self.setStyleSheet("background: url(./frontend/Fondo.jpg)")
         self.setStyleSheet("background: url(./frontend/img/Fondo.jpg)")
-
 
         self.frameTitle = QFrame(self)
         self.frameTitle.setGeometry(30,40,420,70)
@@ -27,7 +25,7 @@ class LoginWindow(QMainWindow):
         self.frameLogo.setStyleSheet("border-image: url(./frontend/img/Logo.png) 0 0 0 0 stretch stretch;")
 
         self.frameInputs = QFrame(self)
-        self.frameInputs.setGeometry(30,140,420,230)
+        self.frameInputs.setGeometry(30,150,420,230)
         self.frameInputs.setStyleSheet("background: white; border-radius: 10px")
 
         self.Id_usuario = QLineEdit()
@@ -35,117 +33,48 @@ class LoginWindow(QMainWindow):
         self.Id_usuario.setStyleSheet(estilos_login)
 
         self.Password = QLineEdit()
-        self.Password.setPlaceholderText("Ingresa tu Constraseña")
+        self.Password.setPlaceholderText("Ingresa tu Contraseña")
         self.Password.setEchoMode(QLineEdit.EchoMode.Password)
         self.Password.setStyleSheet(estilos_login)
 
+        self.tipo_usuario = QComboBox()
+        self.tipo_usuario.addItems(["Usuario", "Admin"])
+        self.tipo_usuario.setStyleSheet(estilos_login)
+        self.tipo_usuario.currentIndexChanged.connect(self.cambio_tipo_usuario)
+
         self.btnLogin = QPushButton("Iniciar Sesión", objectName="btnLogin")
-        #self.btnRegister = QPushButton("Registrarse(Prueba)", objectName="btnRegister")
-
-
         self.btnLogin.setStyleSheet(btnStyle)
-        #self.btnRegister.setStyleSheet(btnStyle)
         self.btnLogin.setCursor(Qt.PointingHandCursor)
-        #self.btnRegister.setCursor(Qt.PointingHandCursor)
-
-
-
         self.btnLogin.clicked.connect(self.do_login)
-        #self.btnRegister.clicked.connect(self.do_register)
-
 
         self.layout = QVBoxLayout()
         self.layout.setContentsMargins(16,16,16,16)
         self.layout.setSpacing(15)
+        self.layout.addWidget(QLabel("Tipo de usuario:"))
+        self.layout.addWidget(self.tipo_usuario)
         self.layout.addWidget(self.Id_usuario)
         self.layout.addWidget(self.Password)
         self.layout.addWidget(self.btnLogin)
-        #self.layout.addWidget(self.btnRegister)
-        #self.layout.addWidget(self.textBtn)
         self.layout.addStretch()
-
 
         self.widget = QWidget(self.frameInputs)
         self.widget.setLayout(self.layout)
-        
         self.widget.setGeometry(0, 0, self.frameInputs.width(), self.frameInputs.height())
-        
 
-# Comentado pq solo el admin debe manejar la función 
-
-
-    # def do_register(self):
-    #     #esto no sirve pero si lo quito no lo puedo correr por el boton <3
-    #     email = self.Id_usuario.text().strip()
-    #     pw = self.Password.text().strip()
-    #     if not email or not pw:
-    #         QMessageBox.warning(self, "Error", "Completa ambos campos")
-    #         return
-    #     payload = {"nombre": email.split("@")[0], "email": email, "password": pw, "rol": "usuario"}
-    #     try:
-    #         r = requests.post(f"{API_BASE}/api/auth/register", json=payload, timeout=3)
-    #         QMessageBox.information(self, "Registro", str(r.json()))
-    #     except Exception as e:
-    #         QMessageBox.critical(self, "Error", f"No se pudo conectar: {e}")
-
-    # def do_login(self):
-    #     cedula = self.Id_usuario.text().strip()
-    #     pwd = self.Password.text().strip()
-    #     if not cedula or not pwd:
-    #         QMessageBox.warning(self, "Aviso", "Ingrese cédula y contraseña")
-    #         return
-
-    #     try:
-    #         r = requests.post(f"{API_BASE}/api/auth/login", json={"id_usuario": cedula, "password": pwd}, timeout=6)
-    #         admin = requests.get(f"{API_BASE}/api/auth/is_admin")
-    #         if admin.ok:
-    #             is_admin = admin.json().get("is_admin", False)
-    #             GlobalState.is_admin = is_admin
-                
-    #     except Exception as e:
-    #         QMessageBox.critical(self, "Error", f"No se pudo conectar al servidor: {e}")
-    #         return
-
-    #     if r.ok:
-    #         token = r.json().get("access_token")
-    #         if token:
-    #             GlobalState.token = token
-
-    #             try:
-    #                 headers = {"Authorization": f"Bearer {token}"}
-    #                 admin = requests.get(f"{API_BASE}/api/auth/is_admin", headers=headers, timeout=3)
-    #                 GlobalState.is_admin = True if admin.ok and admin.json().get("is_admin") else False
-    #             except Exception:
-    #                 GlobalState.is_admin = False
-
-    #             QMessageBox.information(self, "OK", "Login correcto")
-                
-    #             try:
-    #                 from main_ import MenuWindow
-    #             except Exception:
-    #                 QMessageBox.critical(self, "Error", "No se pudo abrir la ventana principal (import failed).")
-    #                 return
-
-    #             self.hide()
-    #             self.main_window = MenuWindow()
-    #             try:
-    #                 self.main_window.menu_ui()
-    #             except Exception:
-    #                 pass
-    #             self.main_window.show()
-                
-    #         else:
-    #             QMessageBox.critical(self, "Error", "Respuesta inválida del servidor (no token)")
-    #     else:
-    #         try:
-    #             msg = r.json()
-    #         except:
-    #             msg = r.text
-    #         QMessageBox.warning(self, "Login fallido", str(msg))
-
+    def cambio_tipo_usuario(self):
+        if self.tipo_usuario.currentText() == "Admin":
+            self.Id_usuario.setText("Administrador")
+            self.Id_usuario.setDisabled(True)
+        else:
+            self.Id_usuario.clear()
+            self.Id_usuario.setEnabled(True)
 
     def do_login(self):
-        cedula = self.Id_usuario.text().strip()
+        if self.tipo_usuario.currentText() == "Admin":
+            cedula = "1"
+        else:
+            cedula = self.Id_usuario.text().strip()
+
         pwd = self.Password.text().strip()
         if not cedula or not pwd:
             QMessageBox.warning(self, "Aviso", "Ingrese cédula y contraseña")
@@ -191,6 +120,7 @@ class LoginWindow(QMainWindow):
         except Exception:
             pass
         self.main_window.show()
+
 
 
 

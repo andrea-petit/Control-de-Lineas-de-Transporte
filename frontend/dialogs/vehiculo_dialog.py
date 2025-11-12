@@ -1,10 +1,9 @@
 import requests
 from PySide6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit,
-    QPushButton, QMessageBox, QComboBox, QSpinBox, QFormLayout
+    QPushButton, QMessageBox, QComboBox, QSpinBox
 )
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QColor, QPalette
 from app_state import API_BASE, GlobalState
 
 
@@ -13,60 +12,56 @@ class VehiculoDialog(QDialog):
         super().__init__(parent)
         self.vehiculo = vehiculo
         self.setWindowTitle("Editar Vehículo" if vehiculo else "Nuevo Vehículo")
-        self.resize(520, 460)
+        self.resize(480, 350)
         self.setup_ui()
-        self.cargar_lineas_combo()
         if self.vehiculo:
             self.cargar_datos()
 
     def setup_ui(self):
         layout = QVBoxLayout(self)
 
-        form = QFormLayout()
-        form.setLabelAlignment(Qt.AlignRight)
-        form.setFormAlignment(Qt.AlignTop)
+        # --- Inicializar widgets de campos ---
+        self.widgets_campos = {
+            "Placa": QLineEdit(),
+            "Marca": QLineEdit(),
+            "Modelo": QLineEdit(),
+            "Nombre propietario": QLineEdit(),
+            "Cédula propietario": QLineEdit(),
+            "Capacidad": QSpinBox(),
+            "Litraje": QLineEdit(),
+            "Sindicato / Grupo": QLineEdit(),
+            "Modalidad": QComboBox(),
+            "Grupo": QComboBox(),
+            "Combustible": QComboBox(),
+            "Línea asignada": QComboBox(),
+            "Descripción": QLineEdit()
+        }
 
-        # ---------- Campos ----------
-        self.input_placa = QLineEdit()
-        self.input_marca = QLineEdit()
-        self.input_modelo = QLineEdit()
-        self.input_propietario = QLineEdit()
-        self.input_cedula = QLineEdit()
-        self.spin_capacidad = QSpinBox()
-        self.spin_capacidad.setRange(0, 999)
-        self.input_litraje = QLineEdit()
+        # Configurar SpinBox y combos
+        self.widgets_campos["Capacidad"].setRange(0, 999)
+        self.widgets_campos["Modalidad"].addItems(["Masivo", "Por puesto", "Taxi", "Mototaxi"])
+        self.widgets_campos["Grupo"].addItems(["A", "B"])
+        self.widgets_campos["Combustible"].addItems(["Gasolina", "Diésel"])
+        self.cargar_lineas_combo_widget(self.widgets_campos["Línea asignada"])
 
-        self.input_sindicato = QLineEdit()
+        # --- Selección del campo a editar ---
+        layout.addWidget(QLabel("Seleccionar campo a editar:"))
+        self.combo_campo = QComboBox()
+        self.combo_campo.addItems(list(self.widgets_campos.keys()))
+        self.combo_campo.currentIndexChanged.connect(self.mostrar_campo)
+        layout.addWidget(self.combo_campo)
 
-        # Combos con opciones fijas
-        self.combo_modalidad = QComboBox()
-        self.combo_modalidad.addItems(["Masivo", "Por puesto", "Taxi", "Mototaxi"])
-        self.combo_grupo = QComboBox()
-        self.combo_grupo.addItems(["A", "B"])
-        self.combo_combustible = QComboBox()
-        self.combo_combustible.addItems(["Gasolina", "Diésel"])
+        # --- Contenedor dinámico para el campo elegido ---
+        self.campo_layout = QVBoxLayout()
+        layout.addLayout(self.campo_layout)
 
-        self.combo_linea = QComboBox()
-        self.input_descripcion = QLineEdit()
+        # --- Motivo del cambio ---
+        layout.addWidget(QLabel("Motivo del cambio:"))
+        self.input_motivo = QLineEdit()
+        self.input_motivo.setPlaceholderText("Escriba la razón del cambio")
+        layout.addWidget(self.input_motivo)
 
-        # ---------- Añadir al formulario ----------
-        form.addRow("Placa:", self.input_placa)
-        form.addRow("Marca:", self.input_marca)
-        form.addRow("Modelo:", self.input_modelo)
-        form.addRow("Nombre propietario:", self.input_propietario)
-        form.addRow("Cédula propietario:", self.input_cedula)
-        form.addRow("Capacidad:", self.spin_capacidad)
-        form.addRow("Litraje:", self.input_litraje)
-        form.addRow("Sindicato / Grupo:", self.input_sindicato)
-        form.addRow("Modalidad:", self.combo_modalidad)
-        form.addRow("Grupo:", self.combo_grupo)
-        form.addRow("Combustible:", self.combo_combustible)
-        form.addRow("Línea asignada:", self.combo_linea)
-        form.addRow("Descripción (opcional):", self.input_descripcion)
-
-        layout.addLayout(form)
-
-        # ---------- Botones ----------
+        # --- Botones ---
         btns = QHBoxLayout()
         self.btn_guardar = QPushButton("Guardar")
         self.btn_cancelar = QPushButton("Cancelar")
@@ -77,7 +72,7 @@ class VehiculoDialog(QDialog):
         btns.addWidget(self.btn_cancelar)
         layout.addLayout(btns)
 
-        # ---------- Estilo ----------
+        # --- Estilo compacto ---
         self.setStyleSheet("""
             QDialog {
                 background-color: #f7faff;
@@ -85,23 +80,18 @@ class VehiculoDialog(QDialog):
             QLabel {
                 font-weight: bold;
                 color: #2a4d69;
-                margin-bottom: 3px;
             }
             QLineEdit, QComboBox, QSpinBox {
                 border: 1px solid #a3c2ff;
                 border-radius: 6px;
-                padding: 6px;
-                background-color: #ffffff;
-            }
-            QLineEdit:focus, QComboBox:focus, QSpinBox:focus {
-                border: 1px solid #4a90e2;
-                background-color: #f0f6ff;
+                padding: 4px 6px;
+                min-width: 120px;
             }
             QPushButton {
                 background-color: #4a90e2;
                 color: white;
                 border-radius: 6px;
-                padding: 6px 14px;
+                padding: 6px 12px;
             }
             QPushButton:hover {
                 background-color: #357ab7;
@@ -117,96 +107,134 @@ class VehiculoDialog(QDialog):
         self.btn_cancelar.setCursor(Qt.PointingHandCursor)
         self.btn_cancelar.setObjectName("cancelar")
 
-    # -------------------------------------------------------------------------
-    def cargar_lineas_combo(self):
+        # Mostrar el primer campo
+        self.mostrar_campo()
+
+    def mostrar_campo(self):
+        # Limpiar layout dinámico
+        while self.campo_layout.count():
+            item = self.campo_layout.takeAt(0)
+            if item.widget():
+                item.widget().setParent(None)
+
+        campo_actual = self.combo_campo.currentText()
+        widget = self.widgets_campos[campo_actual]
+
+        self.campo_layout.addWidget(QLabel(campo_actual + ":"))
+        self.campo_layout.addWidget(widget)
+
+    def cargar_lineas_combo_widget(self, combo):
         headers = {"Authorization": f"Bearer {GlobalState.token}"} if GlobalState.token else {}
         try:
             r = requests.get(f"{API_BASE}/api/lineas", headers=headers, timeout=6)
             if r.status_code == 200:
-                lineas = r.json()
-                self.combo_linea.clear()
-                for l in lineas:
-                    self.combo_linea.addItem(l.get("nombre_organizacion", "Sin nombre"), l.get("id"))
+                combo.clear()
+                for l in r.json():
+                    combo.addItem(l.get("nombre_organizacion", "Sin nombre"), l.get("id"))
             else:
                 QMessageBox.warning(self, "Error", "No se pudieron cargar las líneas")
         except Exception as e:
             QMessageBox.critical(self, "Error", f"No se pudo conectar: {e}")
 
-    # -------------------------------------------------------------------------
     def cargar_datos(self):
         v = self.vehiculo
-        self.input_placa.setText(v.get("placa", ""))
-        self.input_marca.setText(v.get("marca", ""))
-        self.input_modelo.setText(v.get("modelo", ""))
-        self.input_propietario.setText(v.get("nombre_propietario", ""))
-        self.input_cedula.setText(v.get("cedula_propietario", ""))
-        try:
-            self.spin_capacidad.setValue(int(v.get("capacidad") or 0))
-        except Exception:
-            self.spin_capacidad.setValue(0)
-        self.input_litraje.setText(str(v.get("litraje", "")))
-        self.input_sindicato.setText(v.get("sindicato", ""))
+        if not v:
+            return
 
-        # Combos
-        if v.get("modalidad"):
-            i = self.combo_modalidad.findText(v["modalidad"], Qt.MatchFixedString)
-            if i >= 0: self.combo_modalidad.setCurrentIndex(i)
-        if v.get("grupo"):
-            i = self.combo_grupo.findText(v["grupo"], Qt.MatchFixedString)
-            if i >= 0: self.combo_grupo.setCurrentIndex(i)
-        if v.get("combustible"):
-            i = self.combo_combustible.findText(v["combustible"], Qt.MatchFixedString)
-            if i >= 0: self.combo_combustible.setCurrentIndex(i)
+        map_fields = {
+            "Placa": "placa",
+            "Marca": "marca",
+            "Modelo": "modelo",
+            "Nombre propietario": "nombre_propietario",
+            "Cédula propietario": "cedula_propietario",
+            "Capacidad": "capacidad",
+            "Litraje": "litraje",
+            "Sindicato / Grupo": "sindicato",
+            "Modalidad": "modalidad",
+            "Grupo": "grupo",
+            "Combustible": "combustible",
+            "Línea asignada": "linea_id",
+            "Descripción": "descripcion"
+        }
 
-        idx = self.combo_linea.findData(v.get("linea_id", v.get("id_linea", None)))
-        if idx >= 0:
-            self.combo_linea.setCurrentIndex(idx)
+        for campo, key in map_fields.items():
+            widget = self.widgets_campos[campo]
+            valor = v.get(key)
+            if valor is None:
+                continue
+            if isinstance(widget, QLineEdit):
+                widget.setText(str(valor))
+            elif isinstance(widget, QSpinBox):
+                try:
+                    widget.setValue(int(valor))
+                except Exception:
+                    widget.setValue(0)
+            elif isinstance(widget, QComboBox):
+                index = widget.findData(valor)
+                if index >= 0:
+                    widget.setCurrentIndex(index)
+                else:
+                    index = widget.findText(str(valor))
+                    if index >= 0:
+                        widget.setCurrentIndex(index)
 
-    # -------------------------------------------------------------------------
     def guardar(self):
         token = getattr(GlobalState, "token", None)
         if not token:
             QMessageBox.warning(self, "No autorizado", "Debe iniciar sesión.")
             return
 
-        headers = {"Authorization": f"Bearer {token}"}
-        descripcion = self.input_descripcion.text().strip()
+        campo = self.combo_campo.currentText()
+        widget = self.widgets_campos[campo]
 
-        data = {
-            "placa": self.input_placa.text().strip(),
-            "marca": self.input_marca.text().strip(),
-            "modelo": self.input_modelo.text().strip(),
-            "nombre_propietario": self.input_propietario.text().strip(),
-            "cedula_propietario": self.input_cedula.text().strip(),
-            "capacidad": self.spin_capacidad.value(),
-            "litraje": self.input_litraje.text().strip(),
-            "sindicato": self.input_sindicato.text().strip(),
-            "modalidad": self.combo_modalidad.currentText(),
-            "grupo": self.combo_grupo.currentText(),
-            "combustible": self.combo_combustible.currentText(),
-            "linea_id": self.combo_linea.currentData(),
-            "descripcion": descripcion or None
-        }
+        if isinstance(widget, QLineEdit):
+            valor = widget.text().strip()
+        elif isinstance(widget, QSpinBox):
+            valor = widget.value()
+        elif isinstance(widget, QComboBox):
+            valor = widget.currentData() or widget.currentText()
+        else:
+            valor = None
 
-        if not data["placa"] or not data["linea_id"]:
-            QMessageBox.warning(self, "Datos incompletos", "Placa y línea son obligatorias.")
+        if valor in ("", None):
+            QMessageBox.warning(self, "Dato requerido", f"Debe ingresar un valor para {campo}.")
             return
 
+        motivo = self.input_motivo.text().strip()
+        if not motivo:
+            QMessageBox.warning(self, "Dato requerido", "Debe ingresar la razón del cambio.")
+            return
+
+        campos_api = {
+            "Placa": "placa",
+            "Marca": "marca",
+            "Modelo": "modelo",
+            "Nombre propietario": "nombre_propietario",
+            "Cédula propietario": "cedula_propietario",
+            "Capacidad": "capacidad",
+            "Litraje": "litraje",
+            "Sindicato / Grupo": "sindicato",
+            "Modalidad": "modalidad",
+            "Grupo": "grupo",
+            "Combustible": "combustible",
+            "Línea asignada": "linea_id",
+            "Descripción": "descripcion"
+        }
+
+        data = {
+            "campo": campos_api[campo],
+            "valor": valor,
+            "descripcion": motivo
+        }
+        headers = {"Authorization": f"Bearer {token}"}
+
         try:
-            if self.vehiculo:
-                vid = self.vehiculo.get("id_vehiculo", self.vehiculo.get("id"))
-                r = requests.put(f"{API_BASE}/api/vehiculos/{vid}", json=data, headers=headers, timeout=8)
-                if r.status_code in (200, 201):
-                    QMessageBox.information(self, "Éxito", "Vehículo actualizado correctamente.")
-                    self.accept()
-                else:
-                    QMessageBox.warning(self, "Error", f"Error al actualizar ({r.status_code})")
+            vid = self.vehiculo.get("id_vehiculo", self.vehiculo.get("id"))
+            r = requests.put(f"{API_BASE}/api/vehiculos/{vid}", json=data, headers=headers, timeout=8)
+            if r.status_code in (200, 201):
+                QMessageBox.information(self, "Éxito", f"{campo} actualizado correctamente.")
+                self.accept()
             else:
-                r = requests.post(f"{API_BASE}/api/vehiculos", json=data, headers=headers, timeout=8)
-                if r.status_code in (200, 201):
-                    QMessageBox.information(self, "Éxito", "Vehículo creado correctamente.")
-                    self.accept()
-                else:
-                    QMessageBox.warning(self, "Error", f"Error al crear ({r.status_code})")
+                QMessageBox.warning(self, "Error", f"Error al actualizar ({r.status_code})")
         except requests.RequestException as e:
             QMessageBox.critical(self, "Error", f"No se pudo conectar: {e}")

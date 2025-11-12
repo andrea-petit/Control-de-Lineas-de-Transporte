@@ -8,6 +8,7 @@ from routes.vehiculo_routes import vehiculo_bp
 from routes.chofer_routes import chofer_bp
 from routes.cambios_routes import cambios_bp
 from routes.utils_routes import utils_bp
+from routes.archivos_routes import register_reporte_routes
 import os
 
 def create_app():

@@ -4,7 +4,32 @@ from config import db
 from controllers.log_utils import registrar_cambio
 
 def listar_vehiculos():
-    return Vehiculo.query.all()
+    query = db.session.query(Vehiculo, LineaTransporte).outerjoin(LineaTransporte, Vehiculo.linea_id == LineaTransporte.id_linea)
+
+    rows = query.all()
+
+    result = []
+
+    for vehiculo, linea in rows:
+        result.append({
+            "id_vehiculo": vehiculo.id_vehiculo,
+            "placa": vehiculo.placa,
+            "marca": vehiculo.marca,
+            "modelo": vehiculo.modelo,
+            "nombre_propietario": vehiculo.nombre_propietario,
+            "cedula_propietario": vehiculo.cedula_propietario,
+            "capacidad": vehiculo.capacidad,
+            "litraje": vehiculo.litraje,
+            "sindicato": vehiculo.sindicato,
+            "modalidad": vehiculo.modalidad,
+            "grupo": vehiculo.grupo,
+            "estado": vehiculo.estado,
+            "combustible": vehiculo.combustible,
+            "linea_id": vehiculo.linea_id,
+            "linea_nombre_organizacion": linea.nombre_organizacion if linea else None
+        })
+
+    return result
 
 def listar_vehiculos_por_linea(id_linea):
     return Vehiculo.query.filter_by(linea_id=id_linea).all()

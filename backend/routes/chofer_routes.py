@@ -12,7 +12,7 @@ def model_to_dict(obj):
 @chofer_bp.route('/choferes', methods=['GET'])
 def get_choferes():
     choferes = listar_choferes()
-    return jsonify([model_to_dict(c) for c in choferes]), 200
+    return jsonify(choferes), 200
 
 @chofer_bp.route('/choferes/vehiculo/<int:id_vehiculo>', methods=['GET'])
 def get_choferes_por_vehiculo(id_vehiculo):

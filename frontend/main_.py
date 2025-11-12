@@ -58,7 +58,7 @@ class MenuWindow(QMainWindow):
         self.button1 = QPushButton("Lineas")
         self.button2 = QPushButton("Vehiculos")
         self.button3 = QPushButton("Choferes")
-        self.button4 = QPushButton("Cambios")
+        self.button4 = QPushButton("Historial de Cambios")
         self.button5 = QPushButton("Generar Archivo")
         self.button6 = QPushButton("Administrar Usuarios")
         #self.button5 = QPushButton("cerrar Sesion")
@@ -71,7 +71,6 @@ class MenuWindow(QMainWindow):
 
         self.button6.setVisible(GlobalState.is_admin)
         
-        #layout horizontal con separación y márgenes
         self.buttons_layout = QVBoxLayout()
         self.buttons_layout.setContentsMargins(4, 4, 4, 4)
         self.buttons_layout.setSpacing(10)

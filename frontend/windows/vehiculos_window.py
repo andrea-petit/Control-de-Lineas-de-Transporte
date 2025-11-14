@@ -15,12 +15,11 @@ class VehiculosWindow(QWidget):
         self.setWindowTitle("Vehículos")
         self.resize(1100, 620)
         self.setup_ui()
-        self.cargar_lineas()  # llenar combo de líneas
+        self.cargar_lineas() 
 
     def setup_ui(self):
         layout = QVBoxLayout(self)
 
-        # header: seleccionar línea
         top = QHBoxLayout()
         lbl = QLabel("Seleccionar Línea:")
         lbl.setStyleSheet("font-weight:bold;")
@@ -44,13 +43,11 @@ class VehiculosWindow(QWidget):
         top.addStretch()
         layout.addLayout(top)
 
-        # título (estilo similar a ventana de líneas)
         self.label_titulo = QLabel("Vehículos")
         self.label_titulo.setAlignment(Qt.AlignCenter)
         self.label_titulo.setStyleSheet("font-weight: bold; font-size: 16px; margin: 10px; color: #002b80;")
         layout.addWidget(self.label_titulo)
 
-        # tabla: ahora muestra todos los campos principales del modelo
         self.tabla = QTableWidget()
         self.tabla.setAlternatingRowColors(True)
         self.tabla.setStyleSheet("background-color: #f4f7ff; gridline-color: #dcdcdc;")
@@ -105,7 +102,6 @@ class VehiculosWindow(QWidget):
         self.setAutoFillBackground(True)
         self.setPalette(pal)
 
-    # -------------------------------------------------------------------------
     def cargar_lineas(self):
         headers = {"Authorization": f"Bearer {GlobalState.token}"} if GlobalState.token else {}
         try:
@@ -163,6 +159,8 @@ class VehiculosWindow(QWidget):
             linea_nombre = v.get("linea_nombre_organizacion") or v.get("nombre_organizacion") or str(v.get("linea_id", v.get("id_linea", "")))
             estado = v.get("estado", "")
 
+
+
             items = [
                 str(vid or ""),
                 placa,
@@ -185,6 +183,11 @@ class VehiculosWindow(QWidget):
                 # centrar columnas numéricas / id / capacidad
                 if col in (0, 6, 7):
                     it.setTextAlignment(Qt.AlignCenter)
+                if col == 13:  # estado
+                    if estado.lower() == "inactivo":
+                        it.setBackground(QColor("#f87171"))  # rojo claro
+                    elif estado.lower()== "deshabilitado":
+                        it.setBackground(QColor("#f8ef71"))
                 self.tabla.setItem(row, col, it)
 
             # acciones (editar / eliminar)
@@ -207,13 +210,11 @@ class VehiculosWindow(QWidget):
             action_widget.setLayout(action_layout)
             self.tabla.setCellWidget(row, len(items), action_widget)
 
-    # -------------------------------------------------------------------------
     def agregar_vehiculo(self):
         dlg = VehiculoDialog(self)
         if dlg.exec():
             self.cargar_vehiculos_por_linea()
 
-    # -------------------------------------------------------------------------
     def editar_vehiculo(self, id_vehiculo):
         headers = {"Authorization": f"Bearer {GlobalState.token}"} if GlobalState.token else {}
         try:
@@ -228,7 +229,6 @@ class VehiculosWindow(QWidget):
         except Exception as e:
             QMessageBox.critical(self, "Error", f"No se pudo conectar: {e}")
 
-    # -------------------------------------------------------------------------
     def eliminar_vehiculo(self, id_vehiculo):
         token = getattr(GlobalState, "token", None)
         if not token:

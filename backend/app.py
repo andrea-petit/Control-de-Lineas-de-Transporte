@@ -1,7 +1,8 @@
 from flask import Flask
 from flask_cors import CORS
-from config import Config, db
+from config import Config, db, mail
 from flask_jwt_extended import JWTManager
+from flask_mail import Mail, Message
 from routes.auth_routes import auth_bp
 from routes.linea_routes import linea_bp
 from routes.vehiculo_routes import vehiculo_bp
@@ -17,6 +18,7 @@ def create_app():
     CORS(app)
 
     db.init_app(app)
+    mail.init_app(app)
 
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(linea_bp, url_prefix='/api')

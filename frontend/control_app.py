@@ -5,6 +5,7 @@ from PySide6.QtGui import *
 from styles import estilos_menu, btnStyle, estilos_login
 import requests
 from app_state import API_BASE, GlobalState
+from dialogs.reset_dialog import RecuperarPasswordDialog
 
 class LoginWindow(QMainWindow):
     def setup_ui(self):
@@ -47,6 +48,12 @@ class LoginWindow(QMainWindow):
         self.btnLogin.setCursor(Qt.PointingHandCursor)
         self.btnLogin.clicked.connect(self.do_login)
 
+        self.olvidaste_btn = QPushButton("¿Olvidaste tu contraseña?")
+        self.olvidaste_btn.setStyleSheet(btnStyle)
+        self.olvidaste_btn.setCursor(Qt.PointingHandCursor)
+        self.olvidaste_btn.clicked.connect(self.mostrar_recuperacion)
+
+
         self.layout = QVBoxLayout()
         self.layout.setContentsMargins(25,25,25,25)
         self.layout.setSpacing(15)
@@ -55,6 +62,7 @@ class LoginWindow(QMainWindow):
         self.layout.addWidget(self.Id_usuario)
         self.layout.addWidget(self.Password)
         self.layout.addWidget(self.btnLogin)
+        self.layout.addWidget(self.olvidaste_btn)
         self.layout.addStretch()
 
         self.widget = QWidget(self.frameInputs)
@@ -161,8 +169,9 @@ class LoginWindow(QMainWindow):
             pass
         self.main_window.show()
 
-
-
+    def mostrar_recuperacion(self):
+        dlg = RecuperarPasswordDialog()
+        dlg.exec()
 
 
 if __name__ == "__main__":

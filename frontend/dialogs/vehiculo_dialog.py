@@ -34,7 +34,8 @@ class VehiculoDialog(QDialog):
             "Grupo": QComboBox(),
             "Combustible": QComboBox(),
             "Línea asignada": QComboBox(),
-            "Descripción": QLineEdit()
+            "Descripción": QLineEdit(),
+            "Estado": QComboBox()
         }
 
         # Configurar SpinBox y combos
@@ -42,6 +43,7 @@ class VehiculoDialog(QDialog):
         self.widgets_campos["Modalidad"].addItems(["Masivo", "Por puesto", "Taxi", "Mototaxi"])
         self.widgets_campos["Grupo"].addItems(["A", "B"])
         self.widgets_campos["Combustible"].addItems(["Gasolina", "Diésel"])
+        self.widgets_campos["Estado"].addItems(["Activo", "Inactivo", "Deshabilitado"])
         self.cargar_lineas_combo_widget(self.widgets_campos["Línea asignada"])
 
         # --- Selección del campo a editar ---
@@ -154,7 +156,8 @@ class VehiculoDialog(QDialog):
             "Grupo": "grupo",
             "Combustible": "combustible",
             "Línea asignada": "linea_id",
-            "Descripción": "descripcion"
+            "Descripción": "descripcion",
+            "Estado": "estado"
         }
 
         for campo, key in map_fields.items():
@@ -218,7 +221,8 @@ class VehiculoDialog(QDialog):
             "Grupo": "grupo",
             "Combustible": "combustible",
             "Línea asignada": "linea_id",
-            "Descripción": "descripcion"
+            "Descripción": "descripcion",
+            "Estado": "estado"
         }
 
         data = {

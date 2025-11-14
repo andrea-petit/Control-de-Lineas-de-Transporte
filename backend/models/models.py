@@ -47,8 +47,6 @@ class Vehiculo(db.Model):
     linea_id = db.Column(db.Integer, db.ForeignKey('lineas.id_linea'))
     linea = db.relationship('LineaTransporte', backref='vehiculos')
 
-
-
 class CambioLog(db.Model):
     __tablename__ = 'log_cambios'
     id_cambio= db.Column(db.Integer, primary_key=True)
@@ -59,3 +57,13 @@ class CambioLog(db.Model):
     campo = db.Column(db.String(50))
     descripcion = db.Column(db.Text)
     fecha = db.Column(db.DateTime, default=datetime.utcnow)
+
+class otp_recovery(db.Model):
+    __tablename__ = "otp_recovery"
+    id_usuario = db.Column(db.Integer, db.ForeignKey("usuarios.id_usuario"), primary_key=True)
+    otp = db.Column(db.Integer, nullable=False)
+    expira = db.Column(db.DateTime, nullable=False)
+    usuario = db.relationship("Usuario", backref="otp_recovery")
+
+
+

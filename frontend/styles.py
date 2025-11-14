@@ -41,13 +41,21 @@ estilos_login = '''
     QLineEdit {
     background: LightBlue;
     color: black;
-    padding: 15px;
+    padding: 12px;
     font-size: 15px;
     border-radius: 10px;
     }
 
     QLineEdit::placeholder {
     color: gray;
+    }
+
+    QComboBox {
+    background: #012d51;
+    color: white;
+    padding: 12px;
+    font-size: 15px;
+    border-radius: 10px;
     }
 '''
 
@@ -59,7 +67,6 @@ btnStyle = '''
         color: white;
         padding: 15px;
         border-radius: 10px;
-        border: none;
         font-size: 13px;
     }
 
@@ -69,4 +76,5 @@ btnStyle = '''
 
     QPushButton:pressed {
         background: #011826;
+    }
 '''

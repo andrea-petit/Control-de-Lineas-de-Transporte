@@ -39,7 +39,7 @@ class LoginWindow(QMainWindow):
         self.Password.setStyleSheet(estilos_login)
 
         self.tipo_usuario = QComboBox()
-        self.tipo_usuario.addItems(["Usuario", "Admin"])
+        self.tipo_usuario.addItems(["Usuario", "Admin", "Servicio Técnico"])
         self.tipo_usuario.setStyleSheet(estilos_login)
         self.tipo_usuario.currentIndexChanged.connect(self.cambio_tipo_usuario)
 
@@ -72,6 +72,10 @@ class LoginWindow(QMainWindow):
     def cambio_tipo_usuario(self):
         if self.tipo_usuario.currentText() == "Admin":
             self.Id_usuario.setText("Administrador")
+            self.Id_usuario.setAlignment(Qt.AlignCenter)
+            self.Id_usuario.setDisabled(True)
+        elif self.tipo_usuario.currentText() == "Servicio Técnico":
+            self.Id_usuario.setText("Servicio Técnico")
             self.Id_usuario.setAlignment(Qt.AlignCenter)
             self.Id_usuario.setDisabled(True)
         else:
@@ -109,6 +113,8 @@ class LoginWindow(QMainWindow):
 
         if self.tipo_usuario.currentText() == "Admin":
             cedula = "1"
+        elif self.tipo_usuario.currentText()== "Servicio Técnico":
+            cedula= "2"
         else:
             cedula = self.Id_usuario.text().strip()
 
@@ -153,25 +159,30 @@ class LoginWindow(QMainWindow):
         alert.show()
         #QMessageBox.information(self, "OK", "Login correcto")
         
-        try:
-            from main_ import MenuWindow
-        except Exception:
-            alert_label.setText("No se pudo abrir la ventana principal (import failed).")
-            alert.show()
-            #QMessageBox.critical(self, "Error", "No se pudo abrir la ventana principal (import failed).")
-            return
-
-        self.hide()
-        self.main_window = MenuWindow()
-        try:
-            self.main_window.menu_ui()
-        except Exception:
-            pass
-        self.main_window.show()
+        if alert.exec() == QDialog.Accepted:
+            try:
+                if self.tipo_usuario.currentText() == "Servicio Técnico":
+                    from windows.mantenimiento_window import MantenimientoWindow
+                    self.hide()
+                    self.mantenimiento_window = MantenimientoWindow()
+                    self.mantenimiento_window.show()
+                else:
+                    from main_ import MenuWindow
+                    self.hide()
+                    self.main_window = MenuWindow()
+                    try:
+                        self.main_window.menu_ui()
+                    except Exception:
+                        pass
+                    self.main_window.show()
+            except Exception as e:
+                alert_label.setText("No se pudo abrir la ventana: " + str(e))
+                alert.show()
+                return
 
     def mostrar_recuperacion(self):
         dlg = RecuperarPasswordDialog()
-        dlg.exec()
+        dlg.exec()  
 
 
 if __name__ == "__main__":
@@ -181,3 +192,4 @@ if __name__ == "__main__":
     window.setup_ui()
     window.show()
     sys.exit(app.exec())
+

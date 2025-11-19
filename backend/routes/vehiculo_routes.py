@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from controllers.vehiculo_controllers import listar_vehiculos, listar_vehiculos_por_linea, listar_vehiculos_por_municipio, obtener_vehiculo, crear_vehiculo, editar_vehiculo, eliminar_vehiculo
+from controllers.vehiculo_controllers import listar_vehiculos_con_linea_y_chofer, listar_vehiculos_por_linea, listar_vehiculos_por_municipio, obtener_vehiculo, crear_vehiculo, editar_vehiculo, eliminar_vehiculo
 from sqlalchemy.inspection import inspect
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
@@ -10,7 +10,7 @@ vehiculo_bp = Blueprint('vehiculo_bp', __name__)
 
 @vehiculo_bp.route('/vehiculos', methods=['GET'])
 def get_vehiculos():
-    vehiculos = listar_vehiculos()
+    vehiculos = listar_vehiculos_con_linea_y_chofer()
     return jsonify(vehiculos), 200
 
 @vehiculo_bp.route('/vehiculos/linea/<int:id_linea>', methods=['GET'])

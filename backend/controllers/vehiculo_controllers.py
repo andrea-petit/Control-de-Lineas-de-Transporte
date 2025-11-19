@@ -1,44 +1,93 @@
-from models.models import Vehiculo
-from models.models import LineaTransporte
 from config import db
+from models.models import Vehiculo, LineaTransporte
 from controllers.log_utils import registrar_cambio
+from sqlalchemy.orm import joinedload
 
-def listar_vehiculos():
-    query = db.session.query(Vehiculo, LineaTransporte).outerjoin(LineaTransporte, Vehiculo.linea_id == LineaTransporte.id_linea)
+def _chofer_dict_from_vehiculo(v):
 
-    rows = query.all()
+    if hasattr(v, "chofer") and getattr(v, "chofer") is not None:
+        ch = getattr(v, "chofer")
+        return {
+            "id_chofer": getattr(ch, "id_chofer", None) or getattr(ch, "id", None),
+            "nombre": getattr(ch, "nombre", None),
+            "cedula": getattr(ch, "cedula", None)
+        }
+    if hasattr(v, "choferes"):
+        chs = getattr(v, "choferes") or []
+        if isinstance(chs, (list, tuple)) and len(chs) > 0:
+            ch = chs[0]
+            return {
+                "id_chofer": getattr(ch, "id_chofer", None) or getattr(ch, "id", None),
+                "nombre": getattr(ch, "nombre", None),
+                "cedula": getattr(ch, "cedula", None)
+            }
+    return None
 
-    result = []
+def _serialize_vehiculo(v):
+    linea_obj = getattr(v, "linea", None)
+    return {
+        "id_vehiculo": getattr(v, "id_vehiculo", None) or getattr(v, "id", None),
+        "placa": getattr(v, "placa", None),
+        "marca": getattr(v, "marca", None),
+        "modelo": getattr(v, "modelo", None),
+        "nombre_propietario": getattr(v, "nombre_propietario", None),
+        "cedula_propietario": getattr(v, "cedula_propietario", None),
+        "capacidad": getattr(v, "capacidad", None),
+        "litraje": getattr(v, "litraje", None),
+        "sindicato": getattr(v, "sindicato", None),
+        "modalidad": getattr(v, "modalidad", None),
+        "grupo": getattr(v, "grupo", None),
+        "estado": getattr(v, "estado", None),
+        "combustible": getattr(v, "combustible", None),
+        "linea_id": getattr(v, "linea_id", None) or (getattr(linea_obj, "id_linea", None) if linea_obj else None),
+        "linea_nombre_organizacion": getattr(linea_obj, "nombre_organizacion", None) if linea_obj else None,
+        "chofer": _chofer_dict_from_vehiculo(v)
+    }
 
-    for vehiculo, linea in rows:
-        result.append({
-            "id_vehiculo": vehiculo.id_vehiculo,
-            "placa": vehiculo.placa,
-            "marca": vehiculo.marca,
-            "modelo": vehiculo.modelo,
-            "nombre_propietario": vehiculo.nombre_propietario,
-            "cedula_propietario": vehiculo.cedula_propietario,
-            "capacidad": vehiculo.capacidad,
-            "litraje": vehiculo.litraje,
-            "sindicato": vehiculo.sindicato,
-            "modalidad": vehiculo.modalidad,
-            "grupo": vehiculo.grupo,
-            "estado": vehiculo.estado,
-            "combustible": vehiculo.combustible,
-            "linea_id": vehiculo.linea_id,
-            "linea_nombre_organizacion": linea.nombre_organizacion if linea else None
-        })
 
-    return result
+def listar_vehiculos_con_linea_y_chofer():
+
+    options = []
+    if hasattr(Vehiculo, "linea"):
+        options.append(joinedload(getattr(Vehiculo, "linea")))
+    for rel in ("chofer", "choferes"):
+        if hasattr(Vehiculo, rel):
+            options.append(joinedload(getattr(Vehiculo, rel)))
+            break
+
+    query = db.session.query(Vehiculo).options(*options)
+    vehiculos = query.all()
+    return [_serialize_vehiculo(v) for v in vehiculos]
+
 
 def listar_vehiculos_por_linea(id_linea):
-    return Vehiculo.query.filter_by(linea_id=id_linea).all()
+    options = []
+    if hasattr(Vehiculo, "linea"):
+        options.append(joinedload(getattr(Vehiculo, "linea")))
+    for rel in ("chofer", "choferes"):
+        if hasattr(Vehiculo, rel):
+            options.append(joinedload(getattr(Vehiculo, rel)))
+            break
+    vehiculos = db.session.query(Vehiculo).filter(Vehiculo.linea_id == id_linea).options(*options).all()
+    return [_serialize_vehiculo(v) for v in vehiculos]
+
+
+def obtener_vehiculo(id_vehiculo):
+    options = []
+    if hasattr(Vehiculo, "linea"):
+        options.append(joinedload(getattr(Vehiculo, "linea")))
+    for rel in ("chofer", "choferes"):
+        if hasattr(Vehiculo, rel):
+            options.append(joinedload(getattr(Vehiculo, rel)))
+            break
+    v = db.session.query(Vehiculo).options(*options).get(id_vehiculo)
+    if not v:
+        return None
+    return _serialize_vehiculo(v)
+
 
 def listar_vehiculos_por_municipio(id_municipio):
     return Vehiculo.query.join(Vehiculo.linea).filter_by(id_municipio=id_municipio).all()
-
-def obtener_vehiculo(id_vehiculo):
-    return Vehiculo.query.get(id_vehiculo)
 
 def crear_vehiculo(placa, marca, modelo, nombre_propietario, cedula_propietario, capacidad, litraje, sindicato, modalidad, grupo, linea_id, combustible, usuario_id=None, descripcion=None):
     if Vehiculo.query.filter_by(placa=placa).first():

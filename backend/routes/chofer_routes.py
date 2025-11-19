@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from controllers.chofer_controllers import listar_choferes, listar_choferes_por_vehiculo, obtener_chofer, crear_chofer, editar_chofer, eliminar_chofer
+from controllers.chofer_controllers import listar_choferes, listar_choferes_por_vehiculo, obtener_chofer, crear_chofer, editar_chofer, eliminar_chofer, buscar_choferes_por_placa
 from sqlalchemy.inspection import inspect
 
 
@@ -25,6 +25,16 @@ def get_chofer(id_chofer):
     if chofer:
         return jsonify(model_to_dict(chofer)), 200
     return jsonify({'error': 'Chofer no encontrado'}), 404
+
+@chofer_bp.route('/choferes/buscar/<placa>', methods=['GET'])
+def buscar_choferes_por_placa(placa):
+    choferes = buscar_choferes_por_placa(placa)
+    return jsonify(choferes), 200
+
+@chofer_bp.route('/choferes/buscar/<int:id_vehiculo>', methods=['GET'])
+def buscar_choferes_por_idVehiculo(id_vehiculo):
+    choferes = buscar_choferes_por_idVehiculo(id_vehiculo)
+    return jsonify(choferes), 200
 
 @chofer_bp.route('/choferes', methods=['POST'])
 @jwt_required()

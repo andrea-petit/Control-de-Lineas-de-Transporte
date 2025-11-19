@@ -14,7 +14,7 @@ class ChoferesWindow(QWidget):
         self.setWindowTitle("Choferes")
         self.resize(980, 580)
         self.setup_ui()
-        self.cargar_vehiculos()  # llenar combo
+        self.cargar_vehiculos()
 
     def setup_ui(self):
         layout = QVBoxLayout(self)
@@ -80,7 +80,6 @@ class ChoferesWindow(QWidget):
         self.btn_agregar = QPushButton("Agregar Chofer")
         self.btn_agregar.clicked.connect(self.agregar_chofer)
         btns.addWidget(self.btn_agregar)
-        # btns.addStretch()
         layout.addLayout(btns)
 
         pal = self.palette()

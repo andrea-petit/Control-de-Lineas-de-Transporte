@@ -28,6 +28,47 @@ def listar_choferes():
 def listar_choferes_por_vehiculo(id_vehiculo):
     return Chofer.query.filter_by(vehiculo_id=id_vehiculo).all()
 
+def buscar_choferes_por_placa(placa):
+    query = db.session.query(Chofer, Vehiculo).join(Vehiculo, Vehiculo.id_vehiculo == Chofer.id_vehiculo).filter(Vehiculo.placa.ilike(f"%{placa}%"))
+
+    rows = query.all()
+
+    result = []
+
+    for chofer, vehiculo in rows:
+        result.append({
+            "id_chofer": chofer.id_chofer,
+            "nombre": chofer.nombre,
+            "cedula": chofer.cedula,
+            "vehiculo_id": chofer.id_vehiculo,
+            "vehiculo_placa": vehiculo.placa if vehiculo else None,
+            "vehiculo_marca": vehiculo.marca if vehiculo else None,
+            "vehiculo_modelo": vehiculo.modelo if Vehiculo else None
+        })
+
+    return result
+
+def buscar_choferes_por_idVehiculo(id_vehiculo):
+    query = db.session.query(Chofer, Vehiculo).join(Vehiculo, Vehiculo.id_vehiculo == Chofer.id_vehiculo).filter(Vehiculo.id_vehiculo==id_vehiculo)
+
+    rows = query.all()
+
+    result = []
+
+    for chofer, vehiculo in rows:
+        result.append({
+            "id_chofer": chofer.id_chofer,
+            "nombre": chofer.nombre,
+            "cedula": chofer.cedula,
+            "vehiculo_id": chofer.id_vehiculo,
+            "vehiculo_placa": vehiculo.placa if vehiculo else None,
+            "vehiculo_marca": vehiculo.marca if vehiculo else None,
+            "vehiculo_modelo": vehiculo.modelo if Vehiculo else None
+        })
+
+    return result
+
+
 def obtener_chofer(id_chofer):
     return Chofer.query.get(id_chofer)
 

@@ -6,6 +6,7 @@ from windows.lineas_window import LineasWindow
 from windows.vehiculos_window import VehiculosWindow
 from windows.chofer_window import ChoferesWindow
 from windows.cambios_window import CambiosWindow
+from windows.mantenimiento_window import MantenimientoWindow
 from app_state import API_BASE, GlobalState 
 
 from styles import estilos_menu
@@ -68,6 +69,7 @@ class MenuWindow(QMainWindow):
         self.button2.clicked.connect(self.cargar_vehiculos_por_linea)
         self.button3.clicked.connect(self.abrir_choferes)
         self.button4.clicked.connect(self.abrir_cambios)
+        self.button5.clicked.connect(self.abrir_mantenimiento)
 
         self.button6.setVisible(GlobalState.is_admin)
         
@@ -162,7 +164,6 @@ class MenuWindow(QMainWindow):
 
         self.cambios_window = CambiosWindow()
         layout.addWidget(self.cambios_window)
-
 
 
 if __name__ == "__main__":

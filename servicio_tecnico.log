@@ -1,0 +1,4 @@
+2025-11-18 19:23:15,684 - INFO - [user:2] h
+2025-11-18 19:28:05,443 - ERROR - Error eliminando C:\Users\PRINCIPAL\Documents\UNIVERSIDAD\6TO SEMESTRE\2da practica\servicio_tecnico.log: [WinError 32] El proceso no tiene acceso al archivo porque está siendo utilizado por otro proceso: 'C:\\Users\\PRINCIPAL\\Documents\\UNIVERSIDAD\\6TO SEMESTRE\\2da practica\\servicio_tecnico.log'
+2025-11-18 19:28:05,443 - ERROR - Error eliminando C:\Users\PRINCIPAL\Documents\UNIVERSIDAD\6TO SEMESTRE\2da practica\server.log: [WinError 32] El proceso no tiene acceso al archivo porque está siendo utilizado por otro proceso: 'C:\\Users\\PRINCIPAL\\Documents\\UNIVERSIDAD\\6TO SEMESTRE\\2da practica\\server.log'
+2025-11-18 19:28:19,282 - INFO - [user:2] Revisado por andrea

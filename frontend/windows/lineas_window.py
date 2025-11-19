@@ -65,19 +65,6 @@ class LineasWindow(QWidget):
         self.tabla.setColumnWidth(0, 730)
         self.tabla.setColumnWidth(1, 475)  
 
-        # self.tabla.setStyleSheet("""
-        #     QHeaderView::section {
-        #         background-color: #b3ccff;
-        #         color: #002b80;
-        #         font-weight: bold;
-        #         padding: 5px;
-        #     }
-        #     QTableWidget {
-        #         background-color: #f8fbff;
-        #         border: 1px solid #a3c2ff;
-        #         gridline-color: #a3c2ff;
-        #     }
-        # """)
 
         self.tabla.setStyleSheet("""
             QTableWidget {

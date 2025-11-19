@@ -15,29 +15,41 @@ def get_resumen():
 
 @mantenimiento_bp.route("/mantenimiento/logs", methods=["GET"])
 def get_logs():
+
     try:
         cantidad = int(request.args.get("count", 100))
     except Exception:
         cantidad = 100
-    logs = obtener_logs(cantidad)
-    return jsonify({"count": len(logs), "logs": logs}), 200
 
+    logs = obtener_logs(cantidad)
+    return jsonify({
+        "cantidad": len(logs),
+        "logs": logs
+    }), 200
 
 @mantenimiento_bp.route("/mantenimiento/logs", methods=["POST"])
 @jwt_required()
 def post_log():
+    """
+    Registrar un nuevo log manualmente desde la UI o algún módulo.
+    """
     data = request.get_json() or {}
+
     mensaje = data.get("mensaje") or data.get("message") or ""
-    nivel = data.get("nivel", "info")
+    nivel = data.get("nivel", "info").lower()
+
     if not mensaje:
-        return jsonify({"error": "mensaje es requerido"}), 400
+        return jsonify({"error": "El campo 'mensaje' es requerido."}), 400
+
     raw_id = get_jwt_identity()
     try:
         user_id = int(raw_id) if raw_id is not None else raw_id
     except Exception:
         user_id = raw_id
-    texto = f"[user:{user_id}] {mensaje}"
-    registro = registrar_log(texto, nivel)
+
+    mensaje_final = f"[user:{user_id}] {mensaje}"
+    registro = registrar_log(mensaje_final, nivel)
+
     return jsonify(registro), 201
 
 
@@ -46,11 +58,17 @@ def post_log():
 def delete_logs():
     ok = limpiar_logs()
     if ok:
-        return jsonify({"mensaje": "Logs eliminados"}), 200
-    return jsonify({"error": "No había logs para eliminar"}), 404
+        return jsonify({"mensaje": "Logs eliminados correctamente."}), 200
+
+    return jsonify({"error": "No existían logs para eliminar."}), 404
 
 
 @mantenimiento_bp.route("/mantenimiento/db_ping", methods=["GET"])
 def get_db_ping():
     ok, msg = probar_conexion_db()
     return jsonify({"db_ok": ok, "mensaje": msg}), 200
+
+@mantenimiento_bp.route("/mantenimiento/ip", methods=["GET"])
+def get_server_ip():
+    ip = obtener_ip_servidor()
+    return jsonify({"ip_servidor": ip}), 200

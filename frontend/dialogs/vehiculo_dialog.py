@@ -93,7 +93,7 @@ class VehiculoDialog(QDialog):
         self.btn_guardar.clicked.connect(self.guardar)
         self.btn_cancelar.clicked.connect(self.reject)
 
-        btns.addStretch()
+        # btns.addStretch()
         btns.addWidget(self.btn_guardar)
         btns.addWidget(self.btn_cancelar)
         layout.addLayout(btns)

@@ -16,14 +16,13 @@ class VehiculosWindow(QWidget):
         super().__init__()
         self.setWindowTitle("Vehículos")
         self.resize(1100, 620)
-        self.vehiculos_cache = []   # cache local de vehículos cargados
+        self.vehiculos_cache = []
         self.setup_ui()
         self.cargar_lineas()
 
     def setup_ui(self):
         layout = QVBoxLayout(self)
 
-        # Línea
         top = QHBoxLayout()
         lbl = QLabel("Seleccionar Línea:")
         lbl.setStyleSheet("font-weight:bold;")
@@ -176,7 +175,6 @@ class VehiculosWindow(QWidget):
 
 
     def manejar_chofer(self, id_vehiculo):
-        """Abre una ventana para crear o editar el chofer del vehículo."""
         existente = None
         try:
             veh = next((x for x in getattr(self, "vehiculos_cache", []) 
@@ -205,7 +203,6 @@ class VehiculosWindow(QWidget):
             except requests.RequestException:
                 existente = None
 
-        # abrir diálogo pasando el chofer existente (puede ser None)
         try:
             dlg = ChoferAsignadoDialog(parent=self, id_vehiculo=id_vehiculo, chofer_existente=existente)
             if dlg.exec():

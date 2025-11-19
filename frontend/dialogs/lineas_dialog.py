@@ -10,7 +10,7 @@ from app_state import API_BASE, GlobalState
 class LineaDialog(QDialog):
     def __init__(self, parent=None, linea=None):
         super().__init__(parent)
-        self.linea = linea  # Si viene con datos, es edición
+        self.linea = linea 
         self.setWindowTitle("Editar Línea" if linea else "Nueva Línea")
         self.resize(400, 300)
         self.setup_ui()
@@ -22,23 +22,19 @@ class LineaDialog(QDialog):
     def setup_ui(self):
         layout = QVBoxLayout(self)
 
-        # Nombre de la organización
         layout.addWidget(QLabel("Nombre de la organización:"))
         self.input_nombre = QLineEdit()
         layout.addWidget(self.input_nombre)
 
-        # Municipio
         layout.addWidget(QLabel("Municipio:"))
         self.combo_municipio = QComboBox()
         layout.addWidget(self.combo_municipio)
 
-        # Descripción (opcional) para el registro de cambio
         layout.addWidget(QLabel("Descripción (registro de cambio):"))
         self.input_descripcion = QLineEdit()
         self.input_descripcion.setPlaceholderText("Breve descripción del cambio (opcional)")
         layout.addWidget(self.input_descripcion)
 
-        # Botones
         btn_layout = QHBoxLayout()
         self.btn_guardar = QPushButton("Guardar")
         self.btn_cancelar = QPushButton("Cancelar")
@@ -85,7 +81,6 @@ class LineaDialog(QDialog):
             }
         """)
 
-    # -------------------------------------------------------------------------
     def cargar_municipios(self):
         """Carga la lista de municipios en el combo."""
         headers = {"Authorization": f"Bearer {GlobalState.token}"} if GlobalState.token else {}
@@ -101,9 +96,7 @@ class LineaDialog(QDialog):
         except Exception as e:
             QMessageBox.critical(self, "Error", f"No se pudo conectar: {e}")
 
-    # -------------------------------------------------------------------------
     def cargar_datos(self):
-        """Si estamos editando, carga los datos de la línea."""
         self.input_nombre.setText(self.linea.get("nombre_organizacion", ""))
 
         id_municipio = self.linea.get("id_municipio")
@@ -111,9 +104,7 @@ class LineaDialog(QDialog):
         if idx >= 0:
             self.combo_municipio.setCurrentIndex(idx)
 
-    # -------------------------------------------------------------------------
     def guardar(self):
-        """Envía los datos al backend (POST o PUT según corresponda)."""
         nombre_organizacion = self.input_nombre.text().strip()
         id_municipio = self.combo_municipio.currentData()
         descripcion = self.input_descripcion.text().strip()
@@ -131,11 +122,9 @@ class LineaDialog(QDialog):
 
         try:
             if self.linea:
-                # --- EDITAR: backend espera 'campo' y 'valor' + aceptamos 'descripcion' ---
                 linea_id = self.linea.get("id")
                 updates = []
 
-                # detectar cambios (envía por cada campo cambiado)
                 if nombre_organizacion != self.linea.get("nombre_organizacion"):
                     updates.append(("nombre_organizacion", nombre_organizacion))
                 if id_municipio != self.linea.get("id_municipio"):
@@ -161,7 +150,6 @@ class LineaDialog(QDialog):
                 return
 
             else:
-                # --- CREAR ---
                 data = {
                     "nombre_organizacion": nombre_organizacion,
                     "id_municipio": id_municipio

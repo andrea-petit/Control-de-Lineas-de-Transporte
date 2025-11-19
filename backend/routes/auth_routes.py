@@ -31,18 +31,6 @@ def login():
     rol= u.rol 
     return jsonify({"mensaje":"login correcto","access_token": token, "rol": rol }), 200
 
-@auth_bp.route('/auth/is_admin', methods=['GET'])
-@jwt_required()
-def is_admin():
-    raw_id = get_jwt_identity()
-    try:
-        user_id = int(raw_id) if raw_id is not None else None
-    except (TypeError, ValueError):
-        user_id = raw_id
-
-    from controllers.auth_controllers import obtener_usuario_por_id
-    usuario = obtener_usuario_por_id(user_id)
-    return jsonify({"is_admin": bool(usuario and usuario.rol == "admin")}), 200
 
 @auth_bp.route('/editar/<int:id_usuario>', methods=['PUT'])
 @jwt_required()
@@ -59,7 +47,7 @@ def edit_usuario(id_usuario):
         return jsonify({"error": str(e)}), 400
 
 
-@auth_bp.route('/eliminar/<int:id_linea>', methods=['DELETE'])
+@auth_bp.route('/eliminar/<int:id_usuario>', methods=['DELETE'])
 @jwt_required()
 def delete_usuario(id_usuario):
     data = request.get_json(silent=True) or {}
@@ -68,15 +56,33 @@ def delete_usuario(id_usuario):
         return jsonify({"mensaje": "Usuario Eliminado"}), 200
     except ValueError as ve:
         return jsonify({"error": str(ve)}), 404
+    
+@auth_bp.route('/usuarios', methods=['POST'])
+def create_usuario():
+    data = request.get_json() or {}
+    try:
+        u = crear_usuario(
+            data.get('id') or data.get('id_usuario'),
+            data.get('nombre'),
+            data.get('email'),
+            data.get('password'),
+            data.get('rol', 'usuario')
+        )
+        return jsonify({"mensaje": "usuario creado", "id_usuario": getattr(u, "id_usuario", None)}), 201
+    except ValueError as ve:
+        return jsonify({"error": str(ve)}), 400
+    except Exception as e:
+        return jsonify({"error": "error interno", "detail": str(e)}), 500
 
 @auth_bp.route('/usuarios', methods=['GET'])
 def get_usuarios():
     usuarios = listar_usuarios()
     data = [
         {
-            "id": u.id_linea,
+            "id": u.id_usuario,
             "nombre": u.nombre,
-            "email": u.email
+            "email": u.email,
+            "rol": u.rol
         }
         for u in usuarios
     ]
@@ -127,4 +133,3 @@ def route_reset_password():
     if error:
         return {"error": error}, 400
     return data, 200
-    

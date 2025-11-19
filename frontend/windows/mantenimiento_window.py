@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
-    QTextEdit, QListWidget, QListWidgetItem, QLineEdit, QMessageBox, QSpinBox
+    QTextEdit, QListWidget, QListWidgetItem, QSpinBox, QMessageBox
 )
 from PySide6.QtCore import Qt
 import requests
@@ -39,31 +39,33 @@ class MantenimientoWindow(QWidget):
         logs_header = QHBoxLayout()
         logs_header.addWidget(QLabel("Logs recientes:"))
         logs_header.addStretch()
+
         self.spin_count = QSpinBox()
         self.spin_count.setRange(1, 1000)
         self.spin_count.setValue(100)
         logs_header.addWidget(QLabel("Cantidad:"))
         logs_header.addWidget(self.spin_count)
+
         btn_load = QPushButton("Cargar logs")
         btn_load.clicked.connect(self.cargar_logs)
         logs_header.addWidget(btn_load)
+
+        btn_clean = QPushButton("Limpiar logs")
+        btn_clean.clicked.connect(self.limpiar_logs)
+        logs_header.addWidget(btn_clean)
+
         layout.addLayout(logs_header)
 
         self.lista_logs = QListWidget()
         layout.addWidget(self.lista_logs)
 
         acciones = QHBoxLayout()
-        self.input_log = QLineEdit()
-        self.input_log.setPlaceholderText("Mensaje para registrar en logs")
-        acciones.addWidget(self.input_log)
-
-        btn_registrar = QPushButton("Registrar log")
-        btn_registrar.clicked.connect(self.post_log)
-        acciones.addWidget(btn_registrar)
 
         btn_db = QPushButton("Probar DB")
         btn_db.clicked.connect(self.probar_db)
         acciones.addWidget(btn_db)
+
+        acciones.addStretch()
 
         layout.addLayout(acciones)
 
@@ -85,6 +87,7 @@ class MantenimientoWindow(QWidget):
                     f"Mensaje DB: {data.get('mensaje_db')}\n"
                 )
                 self.resumen.setPlainText(texto)
+
                 logs = data.get("logs_recientes") or []
                 self.lista_logs.clear()
                 for l in logs:
@@ -92,7 +95,7 @@ class MantenimientoWindow(QWidget):
             else:
                 self.resumen.setPlainText(f"Error cargando resumen ({r.status_code})")
         except requests.RequestException as e:
-            self.resumen.setPlainText(f"No se pudo conectar al servidor: {e}")
+            self.resumen.setPlainText(f"No se pudo conectar al servidor:\n{e}")
 
     def cargar_logs(self):
         count = int(self.spin_count.value())
@@ -100,45 +103,41 @@ class MantenimientoWindow(QWidget):
             r = requests.get(f"{API_BASE}/api/mantenimiento/logs", params={"count": count}, timeout=6)
             if r.ok:
                 payload = r.json()
-                logs = payload.get("logs") if isinstance(payload, dict) else payload
+                logs = payload.get("logs") or []
                 self.lista_logs.clear()
-                for l in logs or []:
+                for l in logs:
                     self.lista_logs.addItem(QListWidgetItem(str(l)))
             else:
                 QMessageBox.warning(self, "Error", f"No se pudieron cargar logs ({r.status_code})")
         except requests.RequestException as e:
-            QMessageBox.critical(self, "Error", f"No se pudo conectar: {e}")
+            QMessageBox.critical(self, "Error", f"No se pudo conectar:\n{e}")
 
-    def post_log(self):
-        msg = self.input_log.text().strip()
-        if not msg:
-            QMessageBox.warning(self, "Aviso", "Ingrese un mensaje para registrar.")
-            return
-        headers = self._auth_headers()
-        payload = {"mensaje": msg, "nivel": "info"}
+    def limpiar_logs(self):
         try:
-            r = requests.post(f"{API_BASE}/api/mantenimiento/logs", json=payload, headers=headers, timeout=8)
-            if r.status_code in (200, 201):
-                QMessageBox.information(self, "Éxito", "Log registrado.")
-                self.input_log.clear()
-                self.cargar_logs()
+            r = requests.delete(
+                f"{API_BASE}/api/mantenimiento/logs",
+                headers=self._auth_headers(),
+                timeout=6
+            )
+            if r.ok:
+                QMessageBox.information(self, "Éxito", "Logs eliminados.")
+                self.lista_logs.clear()
             else:
-                detalle = r.text
-                try: detalle = r.json()
-                except Exception: pass
-                QMessageBox.warning(self, "Error", f"No se pudo registrar log ({r.status_code}): {detalle}")
+                QMessageBox.warning(self, "Error", "No se pudieron eliminar los logs.")
         except requests.RequestException as e:
-            QMessageBox.critical(self, "Error", f"No se pudo conectar: {e}")
+            QMessageBox.critical(self, "Error", f"No se pudo conectar:\n{e}")
 
     def probar_db(self):
         try:
             r = requests.get(f"{API_BASE}/api/mantenimiento/db_ping", timeout=6)
             if r.ok:
-                payload = r.json()
-                ok = payload.get("db_ok")
-                msg = payload.get("mensaje")
-                QMessageBox.information(self, "DB Ping", f"OK: {ok}\n{msg}")
+                data = r.json()
+                QMessageBox.information(
+                    self,
+                    "Conexión a la BD",
+                    f"OK: {data.get('db_ok')}\n{data.get('mensaje')}"
+                )
             else:
                 QMessageBox.warning(self, "Error", f"DB ping falló ({r.status_code})")
         except requests.RequestException as e:
-            QMessageBox.critical(self, "Error", f"No se pudo conectar: {e}")
+            QMessageBox.critical(self, "Error", f"No se pudo conectar:\n{e}")

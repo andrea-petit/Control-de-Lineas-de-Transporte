@@ -1,7 +1,7 @@
 import requests
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
-    QComboBox, QTableWidget, QTableWidgetItem, QMessageBox, QInputDialog, QWidgetItem
+    QComboBox, QTableWidget, QTableWidgetItem, QMessageBox, QInputDialog, QWidgetItem, QLineEdit
 )
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor, QPalette
@@ -38,6 +38,24 @@ class ChoferesWindow(QWidget):
         self.combo_veh.currentIndexChanged.connect(self.cargar_choferes_por_vehiculo)
         top.addWidget(lbl)
         top.addWidget(self.combo_veh)
+
+        search_layout = QHBoxLayout()
+        search_layout.setSpacing(6)
+        self.txt_search_placa = QLineEdit()
+        self.txt_search_placa.setPlaceholderText("Buscar por placa (ej: ABC123)")
+        self.txt_search_placa.setFixedWidth(200)
+        self.txt_search_placa.returnPressed.connect(self.buscar_por_placa)
+        btn_search = QPushButton("Buscar")
+        btn_search.setFixedHeight(28)
+        btn_search.clicked.connect(self.buscar_por_placa)
+        btn_clear = QPushButton("Limpiar")
+        btn_clear.setFixedHeight(28)
+        btn_clear.clicked.connect(self.clear_search)
+        search_layout.addWidget(self.txt_search_placa)
+        search_layout.addWidget(btn_search)
+        search_layout.addWidget(btn_clear)
+
+        top.addLayout(search_layout)
         top.addStretch()
         layout.addLayout(top)
 
@@ -234,3 +252,37 @@ class ChoferesWindow(QWidget):
                 QMessageBox.warning(self, "Error", f"{r.status_code}: {detalle}")
         except requests.RequestException as e:
             QMessageBox.critical(self, "Error", f"No se pudo conectar: {e}")
+
+    def buscar_por_placa(self):
+        placa = (self.txt_search_placa.text() or "").strip()
+        if not placa:
+            QMessageBox.warning(self, "Placa requerida", "Ingrese la placa a buscar.")
+            return
+        headers = {"Authorization": f"Bearer {getattr(GlobalState, 'token', None)}"} if getattr(GlobalState, "token", None) else {}
+        try:
+            r = requests.get(f"{API_BASE}/api/choferes/buscar/{placa}", headers=headers, timeout=6)
+            if r.ok:
+                datos = r.json() or []
+                if isinstance(datos, dict):
+                    datos = [datos]
+                self.label_titulo.setText(f"Choferes - Placa: {placa}")
+                self.mostrar_choferes(datos)
+                return
+        except Exception:
+            pass
+        try:
+            r2 = requests.get(f"{API_BASE}/api/vehiculos/placa/{placa}/chofer", headers=headers, timeout=6)
+            if r2.ok:
+                datos = r2.json()
+                datos = [datos] if isinstance(datos, dict) else (datos or [])
+                self.label_titulo.setText(f"Choferes - Placa: {placa}")
+                self.mostrar_choferes(datos)
+                return
+        except Exception:
+            pass
+
+        QMessageBox.information(self, "No encontrado", f"No se encontraron choferes para la placa '{placa}'.")
+
+    def clear_search(self):
+        self.txt_search_placa.clear()
+        self.cargar_choferes_por_vehiculo()

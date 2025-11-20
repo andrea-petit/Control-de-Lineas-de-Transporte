@@ -53,8 +53,7 @@ def post_log():
     return jsonify(registro), 201
 
 
-@mantenimiento_bp.route("/mantenimiento/logs", methods=["DELETE"])
-@jwt_required()
+@mantenimiento_bp.route("/mantenimiento/borrar_logs", methods=["DELETE"])
 def delete_logs():
     ok = limpiar_logs()
     if ok:

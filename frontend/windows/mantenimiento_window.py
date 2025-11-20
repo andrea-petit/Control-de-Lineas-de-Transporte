@@ -115,7 +115,7 @@ class MantenimientoWindow(QWidget):
     def limpiar_logs(self):
         try:
             r = requests.delete(
-                f"{API_BASE}/api/mantenimiento/logs",
+                f"{API_BASE}/api/mantenimiento/borrar_logs",
                 headers=self._auth_headers(),
                 timeout=6
             )

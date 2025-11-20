@@ -1,15 +1,1 @@
-2025-11-19 16:56:56,256 - WARNING - 404 Not Found: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-2025-11-19 17:20:27,556 - ERROR - RecursionError: maximum recursion depth exceeded
-2025-11-19 17:20:27,581 - WARNING - 404 Not Found: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-2025-11-19 17:20:32,201 - ERROR - RecursionError: maximum recursion depth exceeded
-2025-11-19 17:20:32,224 - WARNING - 404 Not Found: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-2025-11-19 17:24:00,951 - WARNING - 404 Not Found: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-2025-11-19 17:24:00,989 - ERROR - NoInspectionAvailable: No inspection system is available for object of type <class 'dict'>
-2025-11-19 17:24:01,015 - ERROR - NoInspectionAvailable: No inspection system is available for object of type <class 'dict'>
-2025-11-19 17:24:14,970 - ERROR - NoInspectionAvailable: No inspection system is available for object of type <class 'dict'>
-2025-11-19 17:24:17,515 - ERROR - NoInspectionAvailable: No inspection system is available for object of type <class 'dict'>
-2025-11-19 17:55:36,093 - ERROR - ERROR en /api/vehiculos/1 con args {}: No inspection system is available for object of type <class 'dict'>
-2025-11-19 17:55:37,513 - ERROR - ERROR en /api/vehiculos/3 con args {}: No inspection system is available for object of type <class 'dict'>
-2025-11-19 17:55:41,535 - ERROR - ERROR en /api/vehiculos/3 con args {}: No inspection system is available for object of type <class 'dict'>
-2025-11-19 17:55:46,318 - ERROR - ERROR en /api/vehiculos/1 con args {}: No inspection system is available for object of type <class 'dict'>
-2025-11-19 19:10:54,049 - WARNING - Se limpiaron todos los archivos de log
+2025-11-20 09:57:22,150 - WARNING - Se vació el archivo de logs

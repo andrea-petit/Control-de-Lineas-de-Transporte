@@ -9,13 +9,13 @@ from dialogs.reset_dialog import RecuperarPasswordDialog
 
 class LoginWindow(QMainWindow):
     def setup_ui(self):
-        self.setFixedSize(490,435)
+        self.setFixedSize(490,480)
         self.setWindowTitle("Login | Control de Lineas")
         self.setWindowIcon(QIcon("frontend/img/bus.png"))
         self.setStyleSheet("background: url(./frontend/img/Fondo.jpg)")
 
         self.frameTitle = QFrame(self)
-        self.frameTitle.setGeometry(35,20,420,90)
+        self.frameTitle.setGeometry(35,22,420,90)
         self.frameTitle.setStyleSheet(estilos_login)
         self.titulo = QLabel("SISTEMA DE CONTROL DE TRANSPORTE", self.frameTitle)
         self.titulo.setGeometry(0,0,400,90)
@@ -26,7 +26,7 @@ class LoginWindow(QMainWindow):
         self.frameLogo.setStyleSheet("border-image: url(./frontend/img/Logo.png) 0 0 0 0 stretch stretch;")
 
         self.frameInputs = QFrame(self)
-        self.frameInputs.setGeometry(35,133,420,280)
+        self.frameInputs.setGeometry(35,122,420,340)
         self.frameInputs.setStyleSheet("background: white; border-radius: 10px")
 
         self.Id_usuario = QLineEdit()
@@ -105,7 +105,19 @@ class LoginWindow(QMainWindow):
         h.addStretch()
         alert_btn = QPushButton("OK")
         alert_btn.setCursor(Qt.PointingHandCursor)
-        alert_btn.setStyleSheet(btnStyle)
+        alert_btn.setStyleSheet('''QPushButton {background: #012d51;
+                                    color: white;
+                                    padding: 8px 40px 8px 40px;
+                                    border-radius: 10px;
+                                    font-size: 13px;
+                                    margin-top: 10px
+                                    }
+                                    QPushButton:hover {
+                                    background: #024a7a
+                                    }
+                                    QPushButton:pressed {
+                                    background: #011826;
+                                    }''')
         alert_btn.clicked.connect(alert.accept)
         h.addWidget(alert_btn)
         h.addStretch()

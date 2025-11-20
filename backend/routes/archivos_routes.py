@@ -4,10 +4,6 @@ from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identi
 from controllers.archivos_controllers import generar_reporte_pdf_response, generar_reporte_excel_response
 
 def register_reporte_routes(app):
-    """
-    Registra las rutas de reporte en la app Flask.
-    Uso: en tu run.py o donde creas `app` llama: register_reporte_routes(app)
-    """
 
     @app.route('/reporte/vehiculos.pdf', methods=['GET'])
     def reporte_vehiculos_pdf():

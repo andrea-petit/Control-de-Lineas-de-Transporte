@@ -25,6 +25,18 @@ class UsuariosWindow(QWidget):
         top.addWidget(lbl)
         # top.addStretch()
         btn_add = QPushButton("Nuevo Usuario")
+        btn_add.setStyleSheet("""
+                    QPushButton {
+                        background-color: #4d79ff;
+                        color: white;
+                        border-radius: 6px;
+                        font-size: 14px;
+                        padding: 10px;
+                    }
+                    QPushButton:hover {
+                        background-color: #3355cc;
+                    }
+                """)
         btn_add.clicked.connect(self.agregar_usuario)
         top.addWidget(btn_add)
         layout.addLayout(top)

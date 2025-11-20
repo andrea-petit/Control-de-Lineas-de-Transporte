@@ -70,6 +70,11 @@ class VehiculosWindow(QWidget):
 
         btns = QHBoxLayout()
         self.btn_agregar = QPushButton("Agregar Vehículo")
+        self.btn_agregar.setStyleSheet('''background: #012d51;
+                                        color: white;
+                                        padding: 15px;
+                                        border-radius: 10px;
+                                        font-size: 13px;''')
         self.btn_agregar.clicked.connect(self.agregar_vehiculo)
         btns.addWidget(self.btn_agregar)
         btns.addStretch()

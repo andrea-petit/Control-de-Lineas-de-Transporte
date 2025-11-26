@@ -1,16 +1,16 @@
 import requests
-from PySide6.QtWidgets import (
-    QDialog, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit,
-    QPushButton, QMessageBox
-)
-from PySide6.QtCore import Qt
+from PySide6.QtWidgets import *
+from PySide6.QtCore import *
+from PySide6.QtGui import *
 from app_state import API_BASE, GlobalState
+from styles import reset_dialog
 
 class RecuperarPasswordDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Recuperar Contraseña")
-        self.resize(420, 240)
+        self.setWindowIcon(QIcon("frontend/icons/clave.png"))
+        self.resize(420, 200)
         self.layout = QVBoxLayout(self)
         self.setLayout(self.layout)
 
@@ -19,34 +19,25 @@ class RecuperarPasswordDialog(QDialog):
         self.otp_enviado = None
 
         self.init_paso1()
-        self.setStyleSheet("""
-            QDialog { background-color: #f7faff; }
-            QLabel { font-weight: bold; color: #2a4d69; margin-bottom: 3px; }
-            QLineEdit { border: 1px solid #a3c2ff; border-radius: 6px; padding: 6px; background-color: #ffffff; }
-            QLineEdit:focus { border: 1px solid #4a90e2; background-color: #f0f6ff; }
-            QPushButton { background-color: #4a90e2; color: white; border-radius: 6px; padding: 6px 14px; }
-            QPushButton:hover { background-color: #357ab7; }
-            QPushButton#cancelar { background-color: #e74c3c; }
-            QPushButton#cancelar:hover { background-color: #c0392b; }
-        """)
+        self.setStyleSheet(reset_dialog)
 
     def init_paso1(self):
         self.limpiar_layout()
-        self.label= QLabel("Se enviará un código de verificación a tu correo")
         self.label2 = QLabel("Ingresa tu cédula:")
         self.input_cedula = QLineEdit()
         self.btn_enviar = QPushButton("Enviar código")
         self.btn_enviar.clicked.connect(self.enviar_otp)
         self.btn_cancelar = QPushButton("Cancelar")
+        self.label= QLabel("Se enviará un código de verificación a tu correo", objectName="info_label")
         self.btn_cancelar.setObjectName("cancelar")
         self.btn_cancelar.clicked.connect(self.reject)
 
-        self.layout.addWidget(self.label)
         self.layout.addWidget(self.label2)
         self.layout.addWidget(self.input_cedula)
         btns = QHBoxLayout()
         btns.addWidget(self.btn_enviar)
         btns.addWidget(self.btn_cancelar)
+        self.layout.addWidget(self.label)
         self.layout.addLayout(btns)
 
     def enviar_otp(self):

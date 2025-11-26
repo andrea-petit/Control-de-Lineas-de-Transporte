@@ -2,31 +2,55 @@ import sys, socket, requests
 from PySide6.QtWidgets import *
 from PySide6.QtCore import *
 from PySide6.QtGui import *
-from styles import estilos_menu, btnStyle, estilos_login
+from styles import estilos_menu, btnStyle, estilos_login, qcombostyle
 import requests
 from app_state import API_BASE, GlobalState
 from dialogs.reset_dialog import RecuperarPasswordDialog
 
+
 class LoginWindow(QMainWindow):
     def setup_ui(self):
         self.setFixedSize(490,480)
+        self.setFixedSize(520,460)
         self.setWindowTitle("Login | Control de Lineas")
-        self.setWindowIcon(QIcon("frontend/img/bus.png"))
+        self.setWindowIcon(QIcon("frontend/icons/bus.png"))
         self.setStyleSheet("background: url(./frontend/img/Fondo.jpg)")
 
         self.frameTitle = QFrame(self)
         self.frameTitle.setGeometry(35,22,420,90)
+        self.frameTitle.setGeometry(35,22,460,80)
         self.frameTitle.setStyleSheet(estilos_login)
-        self.titulo = QLabel("SISTEMA DE CONTROL DE TRANSPORTE", self.frameTitle)
-        self.titulo.setGeometry(0,0,400,90)
-        self.titulo.setAlignment(Qt.AlignVCenter | Qt.AlignRight)
-        self.titulo.setStyleSheet("font-size: 15px; font-weight: bold;")
-        self.frameLogo = QFrame(self.frameTitle)
-        self.frameLogo.setGeometry(15,-12,90,130)
-        self.frameLogo.setStyleSheet("border-image: url(./frontend/img/Logo.png) 0 0 0 0 stretch stretch;")
+
+        title_layout = QHBoxLayout(self.frameTitle)
+        title_layout.setContentsMargins(8, 8, 8, 8)
+        title_layout.setSpacing(12)
+
+        self.frameLogoLeft = QLabel()
+        # ajustar altura para que quepa en el frameTitle (por ejemplo 60 en vez de 120)
+        self.frameLogoLeft.setFixedSize(75, 50)
+        self.frameLogoLeft.setStyleSheet("border-image: url(./frontend/img/LogoIMTT TR.png) 0 0 0 0 stretch stretch;")
+        self.frameLogoLeft.setScaledContents(True)
+
+        # añadir y forzar alineación vertical centrada
+        title_layout.addWidget(self.frameLogoLeft)
+        title_layout.setAlignment(self.frameLogoLeft, Qt.AlignVCenter)
+
+        self.titulo = QLabel("SISTEMA DE CONTROL DE TRANSPORTE")
+        self.titulo.setStyleSheet("font-size: 13.5px; font-weight: bold; color: black;")
+        self.titulo.setAlignment(Qt.AlignCenter)
+
+        self.frameLogoRight = QLabel()
+        self.frameLogoRight.setFixedSize(80,50)
+        self.frameLogoRight.setStyleSheet("border-image: url(./frontend/img/LogoCariruB.png) 0 0 0 0 stretch stretch;")
+        self.frameLogoRight.setScaledContents(True)
+
+        title_layout.addWidget(self.frameLogoLeft, 0, Qt.AlignVCenter)
+        title_layout.addWidget(self.titulo, 1)
+        title_layout.addWidget(self.frameLogoRight, 0, Qt.AlignVCenter)
 
         self.frameInputs = QFrame(self)
         self.frameInputs.setGeometry(35,122,420,340)
+        self.frameInputs.setGeometry(35,122,460,312)
         self.frameInputs.setStyleSheet("background: white; border-radius: 10px")
 
         self.Id_usuario = QLineEdit()
@@ -40,23 +64,50 @@ class LoginWindow(QMainWindow):
 
         self.tipo_usuario = QComboBox()
         self.tipo_usuario.addItems(["Usuario", "Admin", "Servicio Técnico"])
-        self.tipo_usuario.setStyleSheet(estilos_login)
+        self.tipo_usuario.setStyleSheet(qcombostyle)   
         self.tipo_usuario.currentIndexChanged.connect(self.cambio_tipo_usuario)
 
         self.btnLogin = QPushButton("Iniciar Sesión", objectName="btnLogin")
-        self.btnLogin.setStyleSheet(btnStyle)
+        self.btnLogin.setStyleSheet('''
+                                    QPushButton {
+                                        background: #012d51;
+                                        color: white;
+                                        padding: 15px;
+                                        border-radius: 10px;
+                                        font-size: 13px;
+                                        
+                                    }
+
+                                    QPushButton:hover {
+                                        background: #024a7a
+                                    }
+
+                                    QPushButton:pressed {
+                                        background: #011826;
+                                    }''')
         self.btnLogin.setCursor(Qt.PointingHandCursor)
         self.btnLogin.clicked.connect(self.do_login)
 
         self.olvidaste_btn = QPushButton("¿Olvidaste tu contraseña?")
-        self.olvidaste_btn.setStyleSheet(btnStyle)
+        self.olvidaste_btn.setStyleSheet('''
+                                        QPushButton {
+                                        color: black;
+                                        font-size: 15px;
+                                        font-weight: 400;
+                                        border-bottom: solid 2px black;
+                                        margin-top: -2px;
+                                        }
+                                        QPushButton::hover{
+                                        color: blue;
+                                        }
+''')
         self.olvidaste_btn.setCursor(Qt.PointingHandCursor)
         self.olvidaste_btn.clicked.connect(self.mostrar_recuperacion)
 
 
         self.layout = QVBoxLayout()
-        self.layout.setContentsMargins(25,25,25,25)
-        self.layout.setSpacing(15)
+        self.layout.setContentsMargins(25,20,25,0)
+        self.layout.setSpacing(16)
         #self.layout.addWidget(QLabel("Tipo de usuario:"))
         self.layout.addWidget(self.tipo_usuario)
         self.layout.addWidget(self.Id_usuario)

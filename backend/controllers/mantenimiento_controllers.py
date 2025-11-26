@@ -83,22 +83,17 @@ def resumen_estado():
     }
 
 def limpiar_logs():
-    count = 0
     try:
-        base = LOG_PATH
-        directory = os.path.dirname(base)
-        base_name = os.path.basename(base)
+        if not os.path.exists(LOG_PATH):
+            return False 
 
-        for fname in os.listdir(directory):
-            if fname.startswith(base_name):
-                try:
-                    os.remove(os.path.join(directory, fname))
-                    count += 1
-                except:
-                    pass
+        with open(LOG_PATH, "w", encoding="utf-8") as f:
+            f.truncate(0)
 
-        registrar_log("Se limpiaron todos los archivos de log", "warning")
-        return count > 0
+        registrar_log("Se vació el archivo de logs", "warning")
+        return True
     except Exception as e:
-        registrar_log(f"Error limpiando logs: {e}", "error")
+        registrar_log(f"Error vaciando logs: {e}", "error")
         return False
+
+

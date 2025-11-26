@@ -47,15 +47,16 @@ class ChoferAsignadoDialog(QDialog):
                 pass
 
         placa = _extract_placa_from_dict(self.vehiculo) or str(self.id_vehiculo or "")
-        self.setWindowTitle(f"Chofer del Vehículo {placa}")
+        marca_modelo= self.vehiculo.get("marca", "") + " " + self.vehiculo.get("modelo", "")
+        self.setWindowTitle(f"Chofer del Vehículo {marca_modelo}: {placa}")
         self.resize(420, 260)
         self.mode = "edit" if isinstance(self.chofer, dict) and (self.chofer.get("nombre") or self.chofer.get("cedula")) else "add"
-        self.setup_ui(placa)
+        self.setup_ui(placa, marca_modelo)
 
-    def setup_ui(self, placa):
+    def setup_ui(self, placa, marca_modelo):
         layout = QVBoxLayout(self)
 
-        lbl_title = QLabel(f"Vehículo: {placa}")
+        lbl_title = QLabel(f"Vehículo: {marca_modelo}: {placa}")
         lbl_title.setAlignment(Qt.AlignCenter)
         lbl_title.setStyleSheet("font-weight: bold; font-size: 14px;")
         layout.addWidget(lbl_title)
@@ -67,7 +68,6 @@ class ChoferAsignadoDialog(QDialog):
             self.txt_telefono = QLineEdit()
             form.addRow("Nombre completo:", self.txt_nombre)
             form.addRow("Cédula:", self.txt_cedula)
-            form.addRow("Teléfono (opcional):", self.txt_telefono)
             layout.addLayout(form)
 
             btns = QHBoxLayout()
@@ -84,15 +84,13 @@ class ChoferAsignadoDialog(QDialog):
             fl = QFormLayout(current_info)
             nombre_actual = self.chofer.get("nombre", "")
             cedula_actual = str(self.chofer.get("cedula", ""))
-            telefono_actual = self.chofer.get("telefono", "")
             fl.addRow("Nombre actual:", QLabel(nombre_actual))
             fl.addRow("Cédula actual:", QLabel(cedula_actual))
-            fl.addRow("Teléfono actual:", QLabel(telefono_actual))
             layout.addWidget(current_info)
 
             edit_row = QHBoxLayout()
             self.combo_campo = QComboBox()
-            self.field_map = [("nombre", "Nombre"), ("cedula", "Cédula"), ("telefono", "Teléfono")]
+            self.field_map = [("nombre", "Nombre"), ("cedula", "Cédula")]
             for key, label in self.field_map:
                 self.combo_campo.addItem(label, key)
             self.input_nuevo = QLineEdit()

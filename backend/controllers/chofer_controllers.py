@@ -26,7 +26,7 @@ def listar_choferes():
 
 
 def listar_choferes_por_vehiculo(id_vehiculo):
-    return Chofer.query.filter_by(vehiculo_id=id_vehiculo).all()
+    return Chofer.query.filter_by(id_vehiculo=id_vehiculo).all()
 
 def buscar_choferes_por_placa(placa):
     query = db.session.query(Chofer, Vehiculo).join(Vehiculo, Vehiculo.id_vehiculo == Chofer.id_vehiculo).filter(Vehiculo.placa.ilike(f"%{placa}%"))

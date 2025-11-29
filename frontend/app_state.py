@@ -1,6 +1,6 @@
 import requests
 
-SERVER_IP = "192.168.0.104"
+SERVER_IP = "192.168.1.44"
 PORT = 5000
 
 def detect_api_url():

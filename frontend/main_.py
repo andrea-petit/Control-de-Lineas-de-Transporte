@@ -8,6 +8,7 @@ from windows.chofer_window import ChoferesWindow
 from windows.cambios_window import CambiosWindow
 from windows.mantenimiento_window import MantenimientoWindow
 from windows.usuarios_window import UsuariosWindow
+from windows.archivos_window import ReportGUI
 from app_state import API_BASE, GlobalState 
 
 from styles import *
@@ -86,6 +87,7 @@ class MenuWindow(QMainWindow):
         self.button3.clicked.connect(self.abrir_choferes)
         self.button4.clicked.connect(self.abrir_cambios)
         self.button6.clicked.connect(self.abrir_usuarios)
+        self.button5.clicked.connect(self.abrir_archivos) 
 
         self.button6.setVisible(GlobalState.is_admin)
         
@@ -231,6 +233,20 @@ class MenuWindow(QMainWindow):
 
         self.usuarios_window = UsuariosWindow()
         layout.addWidget(self.usuarios_window)
+        self.toggle_buttons_panel(collapsed=True)
+        
+    def abrir_archivos(self):
+        if self.frame_window.layout() is None:
+            self.frame_window.setLayout(QVBoxLayout())
+        layout = self.frame_window.layout()
+        while layout.count():
+            item = layout.takeAt(0)
+            w = item.widget()
+            if w:
+                w.setParent(None)
+
+        self.archivos_window = ReportGUI()
+        layout.addWidget(self.archivos_window)
         self.toggle_buttons_panel(collapsed=True)
 
 

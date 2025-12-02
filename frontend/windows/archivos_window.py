@@ -39,7 +39,7 @@ class ReportWorker(QObject):
     def run_pdf(self, municipios, combustible, fd, fh):
         try:
             buf = generar_plantilla_pdf_bytes(municipios=municipios, combustible=combustible,
-                                              fecha_desde=fd, fecha_hasta=fh)
+                                            fecha_desde=fd, fecha_hasta=fh)
             self.signals.finished.emit(True, "PDF generado", buf)
         except Exception as e:
             self.signals.finished.emit(False, str(e), None)
@@ -77,6 +77,8 @@ class ReportGUI(QMainWindow):
             QMessageBox.critical(self, "Import error", f"Error importando controlador:\n{_IMPORT_ERROR}")
         self._build_ui()
         self.list_files()
+        
+        
 
     def _build_ui(self):
         central = QWidget()

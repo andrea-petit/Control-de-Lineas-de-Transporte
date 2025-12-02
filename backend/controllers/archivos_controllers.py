@@ -419,7 +419,7 @@ def generar_plantilla_excel_bytes(municipios=None, combustible=None, fecha_desde
 
 def generar_plantilla_pdf_response(municipios=None, combustible=None, fecha_desde=None, fecha_hasta=None, filename=None):
     buf = generar_plantilla_pdf_bytes(municipios=municipios, combustible=combustible,
-                                      fecha_desde=fecha_desde, fecha_hasta=fecha_hasta)
+                                    fecha_desde=fecha_desde, fecha_hasta=fecha_hasta)
     if not filename:
         filename = f"plantilla_uso_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.pdf"
     return send_file(buf, mimetype='application/pdf', as_attachment=True, download_name=filename)
@@ -430,7 +430,7 @@ def generar_plantilla_excel_response(municipios=None, combustible=None, fecha_de
     if not filename:
         filename = f"plantilla_uso_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.xlsx"
     return send_file(buf, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                     as_attachment=True, download_name=filename)
+                    as_attachment=True, download_name=filename)
 
 # ----------------------------
 # Utilidades de archivos
@@ -464,7 +464,7 @@ def listar_archivos(carpeta=None):
         if os.path.isfile(ruta):
             mtime = os.path.getmtime(ruta)
             entradas.append({'filename': fn, 'size': os.path.getsize(ruta),
-                             'fecha_modificacion': datetime.utcfromtimestamp(mtime).isoformat() + 'Z', 'path': ruta})
+                            'fecha_modificacion': datetime.utcfromtimestamp(mtime).isoformat() + 'Z', 'path': ruta})
     entradas.sort(key=lambda e: e['fecha_modificacion'], reverse=True)
     return entradas
 

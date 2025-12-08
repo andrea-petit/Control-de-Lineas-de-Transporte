@@ -1,1 +1,25 @@
 2025-11-20 09:57:22,150 - WARNING - Se vació el archivo de logs
+2025-11-21 08:19:54,206 - ERROR - ERROR en /api/auth/email/31240614 con args {}: [Errno 11001] getaddrinfo failed
+2025-11-21 08:20:04,518 - ERROR - ERROR en /api/auth/email/31091420 con args {}: [Errno 11001] getaddrinfo failed
+2025-12-02 15:51:04,909 - WARNING - 404 Not Found: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-12-02 15:51:08,103 - WARNING - 404 Not Found: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-12-02 15:51:12,015 - WARNING - 404 Not Found: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-12-02 15:51:17,420 - WARNING - 404 Not Found: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-12-02 15:59:46,698 - WARNING - 404 Not Found: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-12-02 15:59:59,342 - WARNING - 404 Not Found: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-12-02 16:06:46,585 - WARNING - 404 Not Found: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-12-02 16:06:48,842 - WARNING - 404 Not Found: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-12-02 16:11:17,633 - WARNING - 404 Not Found: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-12-02 16:11:25,521 - WARNING - 404 Not Found: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-12-02 16:12:03,678 - ERROR - ERROR en /api/choferes con args {}: (psycopg2.errors.InvalidTextRepresentation) la sintaxis de entrada no es válida para tipo integer: «asda»
+LINE 3: WHERE choferes.cedula = 'asda' 
+                                ^
+
+[SQL: SELECT choferes.id_chofer AS choferes_id_chofer, choferes.nombre AS choferes_nombre, choferes.cedula AS choferes_cedula, choferes.id_vehiculo AS choferes_id_vehiculo 
+FROM choferes 
+WHERE choferes.cedula = %(cedula_1)s 
+ LIMIT %(param_1)s]
+[parameters: {'cedula_1': 'asda', 'param_1': 1}]
+(Background on this error at: https://sqlalche.me/e/20/9h9h)
+2025-12-02 16:13:02,183 - WARNING - 404 Not Found: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-12-02 16:13:04,504 - WARNING - 404 Not Found: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.

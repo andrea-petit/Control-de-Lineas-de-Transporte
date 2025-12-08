@@ -8,9 +8,8 @@ from windows.chofer_window import ChoferesWindow
 from windows.cambios_window import CambiosWindow
 from windows.mantenimiento_window import MantenimientoWindow
 from windows.usuarios_window import UsuariosWindow
-from app_state import API_BASE, GlobalState 
-
-from styles import estilos_menu
+from app_state import API_BASE, GlobalState
+from styles import *
 
 
 class MenuWindow(QMainWindow):
@@ -24,7 +23,7 @@ class MenuWindow(QMainWindow):
         self.frame_window = QFrame()
         self.frame_window.setLayout(QVBoxLayout())
         self.frame_buttons = QFrame()
-        # header frame (se usa para el título y controles superiores)
+        
         self.frame_header = QFrame()
 
         self.root_layout = QHBoxLayout()
@@ -63,6 +62,8 @@ class MenuWindow(QMainWindow):
         self.button4 = QPushButton("Historial de Cambios")
         self.button5 = QPushButton("Generar Archivo")
         self.button6 = QPushButton("Administrar Usuarios")
+
+        self.button1,self.button2,self.button3,self.button4,self.button5,self.button6.setStyleSheet(btnStyle)
         #self.button5 = QPushButton("cerrar Sesion")
         #self.button5.clicked.connect(self.close)
 

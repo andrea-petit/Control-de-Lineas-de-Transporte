@@ -17,7 +17,7 @@ class MenuWindow(QMainWindow):
     def menu_ui(self):
         self.setGeometry(150, 40, 1050, 670)
         self.setWindowTitle("Menu | Control de Lineas")
-        self.setWindowIcon(QIcon("frontend/img/autobus.png"))
+        self.setWindowIcon(QIcon("frontend/icons/bus.png"))
 
         self.showMaximized()
 
@@ -29,7 +29,7 @@ class MenuWindow(QMainWindow):
 
         # panel de botones: ancho máximo inicial y estado collapsed
         self.frame_buttons.setMaximumWidth(240)
-        self.frame_buttons.setMinimumWidth(55)   # ancho cuando está retraído
+        self.frame_buttons.setMinimumWidth(65)   # ancho cuando está retraído
         self.buttons_collapsed = False
         self._panel_anim = None
 
@@ -51,8 +51,8 @@ class MenuWindow(QMainWindow):
         self.right_layout.addWidget(self.frame_header)
         self.right_layout.addWidget(self.frame_window)
 
-        self.root_layout.addWidget(self.frame_buttons, 10)
-        self.root_layout.addWidget(self.right_container, 90)
+        self.root_layout.addWidget(self.frame_buttons, 13)
+        self.root_layout.addWidget(self.right_container, 87)
 
         self.root_layout.setContentsMargins(12,12,12,12)
         self.root_layout.setSpacing(15)
@@ -76,8 +76,30 @@ class MenuWindow(QMainWindow):
         self.button4 = QPushButton("Historial de Cambios")
         self.button5 = QPushButton("Generar Archivo")
         self.button6 = QPushButton("Administrar Usuarios")
+        self.btn_logout = QPushButton("Cerrar sesión")
         
+        # asignar rutas de icono y guardar icono en propiedad, pero NO mostrarlo aún
+        icons = {
+            self.button1: "frontend/icons/lineas3.png",
+            self.button2: "frontend/icons/vehiculos2.png",
+            self.button3: "frontend/icons/choferes3.png",
+            self.button4: "frontend/icons/historial2.png",
+            self.button5: "frontend/icons/archivo2.png",
+            self.button6: "frontend/icons/adminuser2.png",
+            self.btn_logout: "frontend/icons/cerrar-sesion.png",
+        }
+        for btn, path in icons.items():
+            icon = QIcon(path) if path and QIcon(path) else QIcon()
+            # guardar icono y texto original para restaurar después
+            btn.setProperty("full_text", btn.text())
+            btn.setProperty("full_icon", icon)
+            # no establecemos icono aquí para que, con el panel expandido, no se vea
+            btn.setIcon(QIcon())
+            btn.setIconSize(QSize(28, 28))
+            # mantener texto alineado a la izquierda por defecto
+            btn.setStyleSheet(btn.styleSheet() + " QPushButton { text-align: center; }")
         
+
         #self.button5 = QPushButton("cerrar Sesion")
         #self.button5.clicked.connect(self.close)
 
@@ -86,7 +108,12 @@ class MenuWindow(QMainWindow):
         self.button3.clicked.connect(self.abrir_choferes)
         self.button4.clicked.connect(self.abrir_cambios)
         self.button6.clicked.connect(self.abrir_usuarios)
-        self.button5.clicked.connect(self.abrir_archivos) 
+        self.button5.clicked.connect(self.abrir_archivos)
+        self.btn_logout.clicked.connect(self.logout)
+
+        # guardar el texto "completo" original en una propiedad para poder restaurarlo
+        for btn in (self.button1, self.button2, self.button3, self.button4, self.button5, self.button6, self.btn_logout):
+            btn.setProperty("full_text", btn.text())
 
         self.button6.setVisible(GlobalState.is_admin)
         
@@ -102,7 +129,24 @@ class MenuWindow(QMainWindow):
         self.frame_buttons.setLayout(self.buttons_layout)
         # empuja los botones hacia arriba y deja espacio abajo para el label de usuario
         self.buttons_layout.addStretch()
+
+        # Mostrar nombre y rol del usuario en la parte inferior
+        username = getattr(GlobalState, "username", getattr(GlobalState, "usuario", "Invitado"))
+        role = getattr(GlobalState, "role", "Usuario")
+        self.user_label = QLabel()
+        self.user_label.setTextFormat(Qt.RichText)
+        self.user_label.setText(f"<div style='text-align:center;'><b>{username}</b><br><span style='font-size:11px;color:#666;'>{role}</span></div>")
+        self.user_label.setAlignment(Qt.AlignCenter)
+        self.user_label.setStyleSheet("padding: 4px;")
+        self.buttons_layout.addWidget(self.user_label)
+
+        # Botón de cerrar sesión (debajo del user_label)
         
+        self.btn_logout.setCursor(Qt.PointingHandCursor)
+        self.btn_logout.setFixedHeight(44)
+        self.btn_logout.setStyleSheet(btnStyle)
+        self.btn_logout.clicked.connect(self.logout)
+        self.buttons_layout.addWidget(self.btn_logout)
 
         header_layout = QHBoxLayout(self.frame_header)
         header_layout.setContentsMargins(16, 8, 16, 8)
@@ -151,15 +195,23 @@ class MenuWindow(QMainWindow):
         self._panel_anim = anim
         self.buttons_collapsed = collapsed
 
-        # opcional: cambiar visibilidad del texto de los botones mientras está retraído
-        for btn in (self.button1, self.button2, self.button3, self.button4, self.button5, self.button6):
+        # cambiar texto / icono según estado
+        for btn in (self.button1, self.button2, self.button3, self.button4, self.button5, self.button6, self.btn_logout):
+            full = btn.property("full_text") or ""
+            icon = btn.property("full_icon") or QIcon()
             if collapsed:
-                btn.setText("")   # deja solo iconos si los fueras a añadir
-                btn.setToolTip(getattr(btn, "text_orig", btn.objectName()))
+                # ocultar texto y mostrar icono centrado
+                btn.setProperty("collapsed_text", btn.text() or full)
+                btn.setText("")                 # quitar texto
+                btn.setIcon(icon)               # mostrar icono
+                btn.setToolTip(full)
+                btn.setStyleSheet(btn.styleSheet() + " QPushButton { text-align: center; }")
             else:
-                # restaurar textos (si quieres mantener los textos estáticos, guarda previamente)
-                # aquí asumimos que no has guardado los textos, así que ponemos ejemplo fijo:
-                btn.setText(btn.property("full_text") if btn.property("full_text") else btn.text())
+                # restaurar texto y ocultar icono
+                btn.setText(full)
+                btn.setIcon(QIcon())            # ocultar icono cuando esté expandido
+                btn.setToolTip("")
+                btn.setStyleSheet(btn.styleSheet() + " QPushButton { text-align: center; }")
 
     # Llamar a toggle al abrir una sección para retraer el menú automáticamente
     def abrir_lineas(self):
@@ -247,6 +299,31 @@ class MenuWindow(QMainWindow):
         self.archivos_window = ReportGUI()
         layout.addWidget(self.archivos_window)
         self.toggle_buttons_panel(collapsed=True)
+
+    def logout(self):
+        """
+        Limpia el estado global, abre la ventana de login y cierra el menú.
+        """
+        # limpiar estado de la aplicación
+        GlobalState.token = None
+        GlobalState.usuario = None
+        GlobalState.is_admin = False
+        for attr in ("current_user_id", "username", "role"):
+            if hasattr(GlobalState, attr):
+                setattr(GlobalState, attr, None)
+
+        # intentar abrir la ventana de login
+        try:
+            from control_app import LoginWindow
+            self.login = LoginWindow()
+            # si tu LoginWindow expone setup_ui, ejecutarlo
+            if hasattr(self.login, "setup_ui"):
+                self.login.setup_ui()
+            self.login.show()
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"No se pudo abrir Login: {e}")
+        # cerrar ventana de menú
+        self.close()
 
 
 if __name__ == "__main__":

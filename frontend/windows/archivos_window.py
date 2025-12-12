@@ -32,7 +32,7 @@ class ReportWorker(QObject):
     def run_pdf(self, municipios, combustible):
         try:
             params = {"municipios": ",".join(municipios) if municipios else None,
-                      "combustible": combustible}
+                    "combustible": combustible}
             r = requests.get(f"{API_BASE_URL}/api/reportes/pdf", params=params)
             if r.status_code != 200:
                 raise Exception(r.text)
@@ -44,7 +44,7 @@ class ReportWorker(QObject):
     def run_xlsx(self, municipios, combustible):
         try:
             params = {"municipios": ",".join(municipios) if municipios else None,
-                      "combustible": combustible}
+                    "combustible": combustible}
             r = requests.get(f"{API_BASE_URL}/api/reportes/xlsx", params=params)
             if r.status_code != 200:
                 raise Exception(r.text)

@@ -17,8 +17,7 @@ class LoginWindow(QMainWindow):
         self.setStyleSheet("background: url(./frontend/img/Fondo.jpg)")
 
         self.frameTitle = QFrame(self)
-        self.frameTitle.setGeometry(35,22,420,90)
-        self.frameTitle.setGeometry(35,22,460,80)
+        self.frameTitle.setGeometry(33,22,460,80)
         self.frameTitle.setStyleSheet(estilos_login)
 
         title_layout = QHBoxLayout(self.frameTitle)
@@ -27,7 +26,7 @@ class LoginWindow(QMainWindow):
 
         self.frameLogoLeft = QLabel()
         # ajustar altura para que quepa en el frameTitle (por ejemplo 60 en vez de 120)
-        self.frameLogoLeft.setFixedSize(75, 50)
+        self.frameLogoLeft.setFixedSize(80, 55)
         self.frameLogoLeft.setStyleSheet("border-image: url(./frontend/img/LogoIMTT TR.png) 0 0 0 0 stretch stretch;")
         self.frameLogoLeft.setScaledContents(True)
 
@@ -35,12 +34,12 @@ class LoginWindow(QMainWindow):
         title_layout.addWidget(self.frameLogoLeft)
         title_layout.setAlignment(self.frameLogoLeft, Qt.AlignVCenter)
 
-        self.titulo = QLabel("SISTEMA DE CONTROL DE TRANSPORTE")
-        self.titulo.setStyleSheet("font-size: 13.5px; font-weight: bold; color: black;")
+        self.titulo = QLabel("SISTEMA DE CONTROL\n DE TRANSPORTE")
+        self.titulo.setStyleSheet("font-size: 18px; font-weight: bold; color: black;")
         self.titulo.setAlignment(Qt.AlignCenter)
 
         self.frameLogoRight = QLabel()
-        self.frameLogoRight.setFixedSize(80,50)
+        self.frameLogoRight.setFixedSize(85,55)
         self.frameLogoRight.setStyleSheet("border-image: url(./frontend/img/LogoCariruB.png) 0 0 0 0 stretch stretch;")
         self.frameLogoRight.setScaledContents(True)
 
@@ -49,8 +48,7 @@ class LoginWindow(QMainWindow):
         title_layout.addWidget(self.frameLogoRight, 0, Qt.AlignVCenter)
 
         self.frameInputs = QFrame(self)
-        self.frameInputs.setGeometry(35,122,420,340)
-        self.frameInputs.setGeometry(35,122,460,312)
+        self.frameInputs.setGeometry(33,122,460,312)
         self.frameInputs.setStyleSheet("background: white; border-radius: 10px")
 
         self.Id_usuario = QLineEdit()
@@ -255,4 +253,5 @@ if __name__ == "__main__":
     window.setup_ui()
     window.show()
     sys.exit(app.exec())
+
 

@@ -10,6 +10,7 @@ from routes.chofer_routes import chofer_bp
 from routes.cambios_routes import cambios_bp
 from routes.utils_routes import utils_bp
 from routes.mantenimiento_routes import mantenimiento_bp
+from routes.archivos_routes import archivos_bp
 import os
 import logging
 from controllers.mantenimiento_controllers import handler as mantenimiento_handler
@@ -63,6 +64,7 @@ def create_app():
     app.register_blueprint(cambios_bp, url_prefix='/api')
     app.register_blueprint(utils_bp, url_prefix='/api')
     app.register_blueprint(mantenimiento_bp, url_prefix='/api')
+    app.register_blueprint(archivos_bp, url_prefix='/api')
 
     app.config['JWT_SECRET_KEY'] = 'secret-key'
     jwt = JWTManager(app)
@@ -100,4 +102,5 @@ if __name__ == "__main__":
     host = os.getenv('FLASK_RUN_HOST', '0.0.0.0')
     port = int(os.getenv('FLASK_RUN_PORT', 5000))
     app.run(host=host, port=port, debug=True)
+
 

@@ -21,7 +21,6 @@ class LineasWindow(QWidget):
         layout = QVBoxLayout()
         self.setLayout(layout)
 
-
         top_layout = QHBoxLayout()
 
         lbl_muni = QLabel("Seleccionar Municipio:")

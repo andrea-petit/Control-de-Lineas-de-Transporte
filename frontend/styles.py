@@ -74,7 +74,7 @@ btnStyle = '''
         color: white;
         padding: 15px;
         border-radius: 10px;
-        font-size: 13px;
+        font-size: 12.5px;
     }
 
     QPushButton:hover {

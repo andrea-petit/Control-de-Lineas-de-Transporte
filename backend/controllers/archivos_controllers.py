@@ -1,378 +1,326 @@
 import io
-import textwrap
 import os
-from uuid import uuid4
 from datetime import datetime
-from werkzeug.utils import secure_filename
-from flask import send_file, current_app, send_from_directory, has_app_context
-from sqlalchemy import desc, func
-from config import db
+from flask import send_file
+from sqlalchemy import func
+from config import db, Config
 from models.models import Vehiculo, LineaTransporte, Chofer, municicipio
 
-# ReportLab (se usa en generar_reporte_pdf_bytes)
-from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import A4
-from reportlab.lib.units import mm
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image as RLImage
+from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4, landscape
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 
-# ...existing code...
-# Pandas (para Excel) - import opcional
-try:
-    import pandas as pd
-except Exception:
-    pd = None
+from openpyxl import Workbook
+from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
+from openpyxl.drawing.image import Image as XLImage
 
-# openpyxl para plantillas Excel (opcional)
-try:
-    from openpyxl import load_workbook
-except Exception:
-    load_workbook = None
-
-# Si no vas a usar desc, eliminarlo de los imports iniciales o dejarlo si se usa
-# from sqlalchemy import desc, func  -> si no usas desc, deja solo: from sqlalchemy import func
-# ...existing code...
+_MES_ES = {
+    1: "ENERO", 2: "FEBRERO", 3: "MARZO", 4: "ABRIL",
+    5: "MAYO", 6: "JUNIO", 7: "JULIO", 8: "AGOSTO",
+    9: "SEPTIEMBRE", 10: "OCTUBRE", 11: "NOVIEMBRE", 12: "DICIEMBRE"
+}
 
 def _register_font():
     try:
-        pdfmetrics.registerFont(TTFont('DejaVuSans', 'DejaVuSans.ttf'))
-        return 'DejaVuSans'
-    except Exception:
-        return 'Helvetica'
+        pdfmetrics.registerFont(TTFont("TimesNewRoman", "times.ttf"))
+        return "TimesNewRoman"
+    except:
+        return "Helvetica"
 
 _FONT_NAME = _register_font()
+styles = getSampleStyleSheet()
+styleN = styles["Normal"]
 
-def _parse_date(d):
-    """Parsea string 'YYYY-MM-DD' o devuelve datetime si ya es datetime o None."""
-    if d is None or d == '':
-        return None
-    if isinstance(d, datetime):
-        return d
-    try:
-        return datetime.strptime(d, '%Y-%m-%d')
-    except Exception:
-        raise ValueError("Formato de fecha inválido. Usa 'YYYY-MM-DD'.")
 
-def obtener_vehiculos_por_municipios(municipios=None, combustible=None, fecha_desde=None, fecha_hasta=None, max_limit=1000):
-    """
-    Busca vehículos por lista de municipios (nombres) y tipo de combustible.
-    - municipios: lista de nombres o string separado por comas (ej. 'Carirubana,Taques,Falcon').
-      Si None devuelve todos.
-    - combustible: 'diesel' o 'gasolina' (case-insensitive). Si None no filtra.
-    - fecha_desde, fecha_hasta: opcional, formato 'YYYY-MM-DD'. Aplican solo si Vehiculo tiene campo fecha.
-    - max_limit: límite de seguridad.
-    Retorna lista de dicts con información del vehículo, línea y chofer(es).
-    """
-    # validar combustible
-    if combustible and combustible.lower() not in ('diesel', 'gasolina'):
-        raise ValueError("combustible debe ser 'diesel' o 'gasolina'")
+styleH = styles["Heading1"]
+REPORT_LOGO_LEFT = Config.REPORT_LOGO_LEFT
+REPORT_LOGO_RIGHT = Config.REPORT_LOGO_RIGHT
 
-    # Normalizar municipios a lista de nombres
-    nombres = None
+def _query_vehiculos(municipios=None, combustible=None, grupo=None, max_limit=5000):
+    q = db.session.query(Vehiculo).join(LineaTransporte).join(municicipio)
     if municipios:
         if isinstance(municipios, str):
-            nombres = [m.strip() for m in municipios.split(',') if m.strip()]
-        else:
-            nombres = [str(m).strip() for m in municipios if m]
-
-    # Parsear fechas
-    fd = _parse_date(fecha_desde)
-    fh = _parse_date(fecha_hasta)
-    if fd and fh and fh < fd:
-        raise ValueError("fecha_hasta debe ser mayor o igual a fecha_desde.")
-
-    # Construir consulta base
-    query = db.session.query(Vehiculo).join(LineaTransporte).join(municicipio)
-
-    if nombres:
-        query = query.filter(municicipio.nombre.in_(nombres))
-
+            municipios = [m.strip() for m in municipios.split(",") if m.strip()]
+        q = q.filter(municicipio.nombre.in_(municipios))
     if combustible:
-        query = query.filter(func.lower(Vehiculo.combustible) == combustible.lower())
+        q = q.filter(func.lower(Vehiculo.combustible) == combustible.lower())
+    if grupo:
+        q = q.filter(func.upper(Vehiculo.grupo) == grupo.upper())
+    return q.order_by(LineaTransporte.nombre_organizacion, Vehiculo.placa).limit(max_limit).all()
 
-    # Aplicar filtro por rango de fechas si el modelo Vehiculo tiene columna de fecha
-    fecha_attr = None
-    for posible in ('created_at', 'fecha', 'fecha_creacion', 'created', 'created_on'):
-        if hasattr(Vehiculo, posible):
-            fecha_attr = getattr(Vehiculo, posible)
-            break
+def _vehiculo_to_row(v):
+    linea = getattr(v, "linea", None)
+    choferes = getattr(v, "choferes", []) or []
+    chofer = choferes[0] if choferes else None
+    return {
+        "placa": v.placa,
+        "marca": v.marca,
+        "modelo": v.modelo,
+        "capacidad": v.capacidad,
+        "litraje": float(v.litraje or 0),
+        "sindicato": v.sindicato or "",
+        "modalidad": v.modalidad or "",
+        "grupo": v.grupo or "",
+        "estado": (v.estado or "").lower(),
+        "propietario": v.nombre_propietario,
+        "cedula_propietario": v.cedula_propietario,
+        "linea": linea.nombre_organizacion if linea else "",
+        "chofer": chofer.nombre if chofer else "",
+        "cedula_chofer": chofer.cedula if chofer else "",
+    }
 
-    if (fd or fh):
-        if fecha_attr is None:
-            raise RuntimeError("No se encontró un campo fecha en Vehiculo para filtrar por fechas. "
-                               "Si quieres filtrar por logs usa CambioLog o añade un campo fecha al modelo Vehiculo.")
-        if fd:
-            query = query.filter(fecha_attr >= fd)
-        if fh:
-            fh_end = datetime(fh.year, fh.month, fh.day, 23, 59, 59)
-            query = query.filter(fecha_attr <= fh_end)
+def generar_reporte_pdf_bytes(municipios=None, combustible=None, grupo=None, title=None, **kwargs):
+    vehiculos = _query_vehiculos(municipios, combustible, grupo)
+    registros = [_vehiculo_to_row(v) for v in vehiculos]
 
-    vehiculos = query.order_by(Vehiculo.id_vehiculo).limit(max_limit).all()
-
-    resultados = []
-    for v in vehiculos:
-        # obtener choferes asociados (puede ser lista)
-        chofer_objs = getattr(v, 'choferes', []) or []
-        choferes_nombres = [c.nombre for c in chofer_objs if getattr(c, 'nombre', None)]
-        nombre_chofer = choferes_nombres[0] if choferes_nombres else None
-
-        linea = getattr(v, 'linea', None)
-        municipio = getattr(linea, 'municipio', None) if linea else None
-
-        resultados.append({
-            'id_vehiculo': getattr(v, 'id_vehiculo', None),
-            'placa': getattr(v, 'placa', None),
-            'marca': getattr(v, 'marca', None),
-            'modelo': getattr(v, 'modelo', None),
-            'capacidad': getattr(v, 'capacidad', None),
-            'litraje': getattr(v, 'litraje', None),
-            'sindicato': getattr(v, 'sindicato', None),
-            'modalidad': getattr(v, 'modalidad', None),
-            'grupo': getattr(v, 'grupo', None),
-            'estado': getattr(v, 'estado', None),
-            'combustible': getattr(v, 'combustible', None),
-            'nombre_propietario': getattr(v, 'nombre_propietario', None),
-            'cedula_propietario': getattr(v, 'cedula_propietario', None),
-            'nombre_linea': linea.nombre_organizacion if linea else None,
-            'id_municipio': municipio.id_municipio if municipio else None,
-            'nombre_municipio': municipio.nombre if municipio else None,
-            'nombre_chofer': nombre_chofer,
-            'choferes': ', '.join(choferes_nombres) if choferes_nombres else None
-        })
-    return resultados
-
-def obtener_vehiculos_por_filtro(id_municipio=None, combustible=None, fecha_desde=None, fecha_hasta=None, max_limit=1000):
-    """
-    Filtra vehículos por id_municipio y combustible. Devuelve lista de dicts.
-    - max_limit: evita cargar demasiados registros.
-    """
-    if combustible and combustible.lower() not in ('diesel', 'gasolina'):
-        raise ValueError("combustible debe ser 'diesel' o 'gasolina'")
-
-    query = db.session.query(Vehiculo).join(LineaTransporte)
-    if id_municipio is not None:
-        # LineaTransporte tiene id_municipio
-        query = query.filter(LineaTransporte.id_municipio == id_municipio)
-
-    if combustible:
-        query = query.filter(func.lower(Vehiculo.combustible) == combustible.lower())
-
-    # aplicar filtro de fechas si existe campo fecha en Vehiculo
-    fecha_attr = None
-    for posible in ('created_at', 'fecha', 'fecha_creacion', 'created', 'created_on'):
-        if hasattr(Vehiculo, posible):
-            fecha_attr = getattr(Vehiculo, posible)
-            break
-
-    fd = _parse_date(fecha_desde)
-    fh = _parse_date(fecha_hasta)
-    if fd and fh and fh < fd:
-        raise ValueError("fecha_hasta debe ser mayor o igual a fecha_desde.")
-    if (fd or fh):
-        if fecha_attr is None:
-            raise RuntimeError("No se encontró un campo fecha en Vehiculo para filtrar por fechas.")
-        if fd:
-            query = query.filter(fecha_attr >= fd)
-        if fh:
-            fh_end = datetime(fh.year, fh.month, fh.day, 23, 59, 59)
-            query = query.filter(fecha_attr <= fh_end)
-
-    vehiculos = query.order_by(Vehiculo.id_vehiculo).limit(max_limit).all()
-
-    resultados = []
-    for v in vehiculos:
-        chofer_objs = getattr(v, 'choferes', []) or []
-        choferes_nombres = [c.nombre for c in chofer_objs if getattr(c, 'nombre', None)]
-        nombre_chofer = choferes_nombres[0] if choferes_nombres else None
-        linea = getattr(v, 'linea', None)
-        municipio = getattr(linea, 'municipio', None) if linea else None
-        resultados.append({
-            'id_vehiculo': getattr(v, 'id_vehiculo', None),
-            'placa': getattr(v, 'placa', None),
-            'marca': getattr(v, 'marca', None),
-            'modelo': getattr(v, 'modelo', None),
-            'combustible': getattr(v, 'combustible', None),
-            'nombre_linea': linea.nombre_organizacion if linea else None,
-            'id_municipio': municipio.id_municipio if municipio else None,
-            'nombre_municipio': municipio.nombre if municipio else None,
-            'nombre_chofer': nombre_chofer,
-            'choferes': ', '.join(choferes_nombres) if choferes_nombres else None
-        })
-    return resultados
-
-# --- funciones de generación de PDF / Excel --
-
-def generar_reporte_pdf_bytes(registros, title=None):
     buffer = io.BytesIO()
-    width, height = A4
-    margin = 15 * mm
-    line_height = 7 * mm
-    left = margin
-    right = width - margin
-    y_start = height - margin
+    doc = SimpleDocTemplate(buffer, pagesize=landscape(A4),
+                            leftMargin=20, rightMargin=20, topMargin=20, bottomMargin=20)
+    story = []
 
-    c = canvas.Canvas(buffer, pagesize=A4)
-    c.setFont(_FONT_NAME, 14)
-    titulo = title or "Reporte de Vehículos"
-    c.drawString(left, y_start, titulo)
-    c.setFont(_FONT_NAME, 9)
-    fecha_generacion = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%SZ')
-    c.drawRightString(right, y_start, f"Generado: {fecha_generacion}")
+    mes = _MES_ES.get(datetime.now().month, "").upper()
 
-    y = y_start - 2 * line_height
+    try: img_left = RLImage(REPORT_LOGO_LEFT, width=50, height=50)
+    except: img_left = Paragraph("", styleN)
+    try: img_right = RLImage(REPORT_LOGO_RIGHT, width=50, height=50)
+    except: img_right = Paragraph("", styleN)
 
-    headers = ['Placa', 'Marca', 'Modelo', 'Combustible', 'Línea', 'Municipio', 'Chofer']
-    col_widths = [28*mm, 28*mm, 28*mm, 22*mm, 36*mm, 36*mm, (right - left) - (28+28+28+22+36+36)*mm]
-    c.setFont(_FONT_NAME, 8)
-    # dibujar encabezados
-    for i, h in enumerate(headers):
-        x = left + sum(col_widths[:i])
-        c.drawString(x + 2, y, h)
-    y -= line_height
+    title_style = ParagraphStyle("title", alignment=TA_CENTER, fontName=_FONT_NAME, fontSize=12)
+    header_style = ParagraphStyle("header", alignment=TA_CENTER, fontName=_FONT_NAME, fontSize=11)
+    sub_style = ParagraphStyle("sub", alignment=TA_CENTER, fontName=_FONT_NAME, fontSize=11)
 
-    c.setFont(_FONT_NAME, 8)
-    for reg in registros:
-        if y < margin + line_height:
-            c.showPage()
-            c.setFont(_FONT_NAME, 9)
-            c.drawString(left, height - margin, titulo)
-            c.setFont(_FONT_NAME, 8)
-            y = height - margin - 2 * line_height
-            for i, h in enumerate(headers):
-                x = left + sum(col_widths[:i])
-                c.drawString(x + 2, y, h)
-            y -= line_height
+    # Encabezado en 3 filas
+    encabezado_tabla = Table([
+        [img_left, Paragraph("<b>INSTITUTO MUNICIPAL DE TRÁNSITO Y TRANSPORTE PÚBLICO DE PASAJEROS DEL MUNICIPIO CARIRUBANA</b>", title_style), img_right],
+        ["", Paragraph("<b>REGISTRO DE ORGANIZACIONES DE TRANSPORTE PÚBLICO URBANO DEL MUNICIPIO CARIRUBANA</b>", header_style), ""],
+        ["", Paragraph(f"<b>{mes} — MASIVOS / POR PUESTO / TAXI / MOTO TAXI</b>", sub_style), ""]
+    ], colWidths=[60, None, 60])
+    encabezado_tabla.setStyle(TableStyle([
+        ("VALIGN",(0,0),(-1,-1),"MIDDLE"),
+        ("ALIGN",(1,0),(1,0),"CENTER"),
+        ("ALIGN",(1,1),(1,1),"CENTER"),
+        ("ALIGN",(1,2),(1,2),"CENTER"),
+        ("BOTTOMPADDING",(0,0),(-1,-1),6)
+    ]))
+    story.append(encabezado_tabla)
+    story.append(Spacer(1, 10))
 
-        vals = [
-            str(reg.get('placa') or ''),
-            str(reg.get('marca') or ''),
-            str(reg.get('modelo') or ''),
-            str(reg.get('combustible') or ''),
-            str(reg.get('nombre_linea') or ''),
-            str(reg.get('nombre_municipio') or ''),
-            str(reg.get('nombre_chofer') or '')
-        ]
+    # Tabla principal
+    headers = ["Nº", "ORGANIZACIÓN", "PROPIETARIO - NOMBRE Y APELLIDO", "C.I",
+               "CHOFER - NOMBRE Y APELLIDO", "C.I", "PLACA", "MARCA", "MODELO",
+               "Nº DE PUESTOS", "LITRAJE", "SINDICATO", "GRUPO", "MODALIDAD", "FIRMA"]
+    data = [headers]
+    for i, r in enumerate(registros, 1):
+        firma = "INACTIVO - NO FIRMA" if r["estado"] in ("inactivo", "suspendido") else ""
+        data.append([i, r["linea"], r["propietario"], r["cedula_propietario"], r["chofer"], r["cedula_chofer"],
+                     r["placa"], r["marca"], r["modelo"], r["capacidad"], r["litraje"], r["sindicato"],
+                     r["grupo"], r["modalidad"], firma])
 
-        x = left
-        for i in range(len(headers)-1):
-            txt = vals[i]
-            c.drawString(x + 2, y, txt[:int(col_widths[i]/3)])
-            x += col_widths[i]
+    base_widths = [19.33, 98.22, 82.11, 46, 65, 37, 49.89, 49.78,
+                   45.67, 29.22, 27.33, 63.67, 25.78, 52.33, 141.33]
+    usable_width = landscape(A4)[0] - 40
+    scale = usable_width / sum(base_widths)
+    col_widths = [w * scale for w in base_widths]
 
-        desc_text = vals[-1]
-        max_chars = int(col_widths[-1] / 3)
-        wrapped = textwrap.wrap(desc_text, width=max_chars) or ['']
-        c.drawString(x + 2, y, wrapped[0])
-        y -= line_height
-        for extra in wrapped[1:]:
-            if y < margin + line_height:
-                c.showPage()
-                c.setFont(_FONT_NAME, 8)
-                y = height - margin - line_height
-            c.drawString(left + 2, y, '')
-            c.drawString(x + 2, y, extra)
-            y -= line_height
+    tabla = Table(data, repeatRows=1, colWidths=col_widths)
+    ts = TableStyle([
+        ("FONTNAME",(0,0),(-1,-1),_FONT_NAME),
+        ("FONTSIZE",(0,0),(-1,0),11),
+        ("FONTSIZE",(0,1),(-1,-1),10),
+        ("BACKGROUND",(0,0),(-1,0),colors.HexColor("#BFBFBF")),
+        ("ALIGN",(0,0),(-1,-1),"CENTER"),
+        ("VALIGN",(0,0),(-1,-1),"MIDDLE"),
+        ("GRID",(0,0),(-1,-1),0.5,colors.black)
+    ])
+    for idx in range(1, len(data)):
+        estado = registros[idx-1]["estado"]
+        if estado == "suspendido":
+            ts.add("BACKGROUND", (0, idx), (-1, idx), colors.HexColor("#C60505"))
+        elif estado == "inactivo":
+            ts.add("BACKGROUND", (0, idx), (-1, idx), colors.HexColor("#F4F429"))
+    tabla.setStyle(ts)
+    story.append(tabla)
+    story.append(Spacer(1, 10))
 
-    c.showPage()
-    c.save()
+    # Resumen
+    story.append(Paragraph("<b>RESUMEN DE LITRAJE POR SINDICATO</b>", header_style))
+    resumen = {}
+    for r in registros:
+        resumen.setdefault(r["sindicato"] or "SIN SINDICATO", 0)
+        resumen[r["sindicato"] or "SIN SINDICATO"] += r["litraje"]
+
+    resumen_data = [["Sindicato", "Total litros"]] + [[s, float(t)] for s, t in resumen.items()]
+    resumen_tabla = Table(resumen_data, colWidths=[400, 150])
+    resumen_tabla.setStyle(TableStyle([
+        ("GRID",(0,0),(-1,-1),0.5,colors.black),
+        ("BACKGROUND",(0,0),(-1,0),colors.HexColor("#BFBFBF")),
+        ("FONTNAME",(0,0),(-1,-1),_FONT_NAME),
+        ("FONTSIZE",(0,0),(-1,-1),10),
+        ("ALIGN",(0,0),(-1,-1),"CENTER")
+    ]))
+    story.append(resumen_tabla)
+    story.append(Spacer(1, 6))
+
+    # Total general en cuadro
+    total_tabla = Table([[f"TOTAL GENERAL DE LITRAJE: {sum(resumen.values())}"]],
+                        colWidths=[550])
+    total_tabla.setStyle(TableStyle([
+        ("BACKGROUND",(0,0),(-1,-1),colors.HexColor("#D9D9D9")),
+        ("FONTNAME",(0,0),(-1,-1),_FONT_NAME),
+        ("FONTSIZE",(0,0),(-1,-1),10),
+        ("ALIGN",(0,0),(-1,-1),"CENTER"),
+        ("VALIGN",(0,0),(-1,-1),"MIDDLE"),
+        ("BOX",(0,0),(-1,-1),0.5,colors.black)
+    ]))
+    story.append(total_tabla)
+
+    doc.build(story)
     buffer.seek(0)
     return buffer
 
-def generar_reporte_excel_bytes(registros):
-    if pd is None:
-        raise RuntimeError("Pandas no está instalado. Instala con: pip install pandas openpyxl")
+def generar_reporte_excel_bytes(municipios=None, combustible=None, grupo=None, title=None, **kwargs):
+    vehiculos = _query_vehiculos(municipios, combustible, grupo)
+    registros = [_vehiculo_to_row(v) for v in vehiculos]
 
-    df = pd.DataFrame(registros)
-    cols = ['id_vehiculo','placa','marca','modelo','combustible','nombre_linea','nombre_municipio','nombre_chofer','choferes',
-            'capacidad','litraje','nombre_propietario','cedula_propietario','estado','sindicato','modalidad','grupo']
-    cols_present = [c for c in cols if c in df.columns]
-    buffer = io.BytesIO()
-    with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
-        df.to_excel(writer, index=False, sheet_name='Vehiculos', columns=cols_present)
-    buffer.seek(0)
-    return buffer
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Reporte Vehículos"
+    mes = _MES_ES.get(datetime.now().month, "").upper()
 
-def generar_reporte_pdf_response(id_municipio=None, municipios=None, combustible=None, fecha_desde=None, fecha_hasta=None, filename=None, max_limit=1000):
-    """
-    Genera Response Flask con PDF. Usa id_municipio o lista/str municipios.
-    """
-    if id_municipio is not None:
-        registros = obtener_vehiculos_por_filtro(id_municipio=id_municipio, combustible=combustible,
-                                                fecha_desde=fecha_desde, fecha_hasta=fecha_hasta, max_limit=max_limit)
+    # Ajuste de anchos de columna (A y O reservadas para logos; tabla va B..O)
+    base_widths = [19.33, 98.22, 82.11, 46, 65, 37, 49.89, 49.78,
+                   45.67, 29.22, 27.33, 63.67, 25.78, 52.33, 141.33]
+    excel_widths = [round(w * 0.12, 2) for w in base_widths]  # B..O
+    # Column A (logo izq) y O (logo der) con ancho fijo para que no se tape
+    ws.column_dimensions["A"].width = 10
+    for i, w in enumerate(excel_widths, start=2):  # B=2 .. O=15
+        ws.column_dimensions[ws.cell(row=1, column=i).column_letter].width = w
+    ws.column_dimensions["O"].width = max(ws.column_dimensions["O"].width, 10)
+
+    # Alturas del encabezado (fila 1 más alta para los logos)
+    ws.row_dimensions[1].height = 60
+    for r in (2, 3, 4):
+        ws.row_dimensions[r].height = 25
+
+    # Encabezado
+    ws.merge_cells("B1:O1")
+    ws.merge_cells("B2:O2")
+    ws.merge_cells("B3:O3")
+    ws.merge_cells("B4:O4")
+
+    ws["B1"].value = "INSTITUTO MUNICIPAL DE TRÁNSITO Y TRANSPORTE PÚBLICO DE PASAJEROS DEL MUNICIPIO CARIRUBANA"
+    ws["B1"].font = Font(bold=True, size=12)
+    ws["B1"].alignment = Alignment(horizontal="center", vertical="center")
+
+    ws["B2"].value = "REGISTRO DE ORGANIZACIONES DE TRANSPORTE PÚBLICO URBANO DEL MUNICIPIO CARIRUBANA"
+    ws["B2"].font = Font(bold=True, size=11, color="FFC60505")  # rojo oscuro
+    ws["B2"].alignment = Alignment(horizontal="center", vertical="center")
+
+    ws["B3"].value = mes
+    ws["B3"].font = Font(bold=True, size=11, color="FFC60505")
+    ws["B3"].alignment = Alignment(horizontal="left", vertical="center")
+
+    ws["B4"].value = "MASIVOS / POR PUESTO / TAXI / MOTO TAXI"
+    ws["B4"].font = Font(bold=True, size=11)
+    ws["B4"].alignment = Alignment(horizontal="right", vertical="center")
+
+    # Logos: no silenciar errores; si no existen, fallar claramente
+    if REPORT_LOGO_LEFT and os.path.exists(REPORT_LOGO_LEFT):
+        img_l = XLImage(REPORT_LOGO_LEFT)
+        img_l.width, img_l.height = 60, 60  # encaja en fila 1 (60 pt altura)
+        ws.add_image(img_l, "A1")
     else:
-        registros = obtener_vehiculos_por_municipios(municipios=municipios, combustible=combustible,
-                                                     fecha_desde=fecha_desde, fecha_hasta=fecha_hasta, max_limit=max_limit)
-    buffer = generar_reporte_pdf_bytes(registros, title=f"Vehículos - combustible={combustible}")
-    if not filename:
-        fecha = datetime.utcnow().strftime('%Y%m%d_%H%M%S')
-        filename = f"reporte_vehiculos_{fecha}.pdf"
-    return send_file(buffer, mimetype='application/pdf', as_attachment=True, download_name=filename)
+        # Si falta, insertamos texto placeholder en A1 para que notes el hueco
+        ws["A1"].value = "LOGO"
+        ws["A1"].alignment = Alignment(horizontal="center", vertical="center")
+        ws["A1"].font = Font(bold=True, size=10)
 
-def generar_reporte_excel_response(id_municipio=None, municipios=None, combustible=None, fecha_desde=None, fecha_hasta=None, filename=None, max_limit=1000):
-    if id_municipio is not None:
-        registros = obtener_vehiculos_por_filtro(id_municipio=id_municipio, combustible=combustible,
-                                                fecha_desde=fecha_desde, fecha_hasta=fecha_hasta, max_limit=max_limit)
+    if REPORT_LOGO_RIGHT and os.path.exists(REPORT_LOGO_RIGHT):
+        img_r = XLImage(REPORT_LOGO_RIGHT)
+        img_r.width, img_r.height = 60, 60
+        ws.add_image(img_r, "O1")
     else:
-        registros = obtener_vehiculos_por_municipios(municipios=municipios, combustible=combustible,
-                                                     fecha_desde=fecha_desde, fecha_hasta=fecha_hasta, max_limit=max_limit)
-    buffer = generar_reporte_excel_bytes(registros)
-    if not filename:
-        fecha = datetime.utcnow().strftime('%Y%m%d_%H%M%S')
-        filename = f"reporte_vehiculos_{fecha}.xlsx"
-    return send_file(buffer, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ws["O1"].value = "LOGO"
+        ws["O1"].alignment = Alignment(horizontal="center", vertical="center")
+        ws["O1"].font = Font(bold=True, size=10)
+
+    # Tabla principal
+    start_row = 6
+    headers = ["Nº", "ORGANIZACIÓN", "PROPIETARIO - NOMBRE Y APELLIDO", "C.I",
+               "CHOFER - NOMBRE Y APELLIDO", "C.I", "PLACA", "MARCA", "MODELO",
+               "Nº DE PUESTOS", "LITRAJE", "SINDICATO", "GRUPO", "MODALIDAD", "FIRMA"]
+
+    ws.row_dimensions[start_row].height = 30
+    thin = Side(border_style="thin", color="000000")
+
+    for col, h in enumerate(headers, start=1):  # columnas A..O (15)
+        c = ws.cell(row=start_row, column=col, value=h)
+        c.font = Font(bold=True, size=10)
+        c.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+        c.fill = PatternFill("solid", fgColor="BFBFBF")
+        c.border = Border(top=thin, left=thin, right=thin, bottom=thin)
+
+    for i, r in enumerate(registros, start=1):
+        row = start_row + i
+        ws.row_dimensions[row].height = 25
+        firma = "INACTIVO - NO FIRMA" if r["estado"] in ("inactivo", "suspendido") else ""
+        values = [i, r["linea"], r["propietario"], r["cedula_propietario"], r["chofer"], r["cedula_chofer"],
+                  r["placa"], r["marca"], r["modelo"], r["capacidad"], r["litraje"], r["sindicato"],
+                  r["grupo"], r["modalidad"], firma]
+        for col, val in enumerate(values, start=1):
+            c = ws.cell(row=row, column=col, value=val)
+            c.font = Font(size=10)
+            # Centro solo la primera columna (Nº); el resto a la izquierda
+            c.alignment = Alignment(horizontal="center" if col == 1 else "left", vertical="center", wrap_text=True)
+            c.border = Border(top=thin, left=thin, right=thin, bottom=thin)
+            if r["estado"] == "suspendido":
+                c.fill = PatternFill("solid", fgColor="FF0000")
+            elif r["estado"] == "inactivo":
+                c.fill = PatternFill("solid", fgColor="FFFF00")
+
+    # Resumen
+    resumen_start = start_row + len(registros) + 2
+    ws.cell(row=resumen_start, column=1, value="RESUMEN DE LITRAJE POR SINDICATO").font = Font(bold=True, size=11)
+    ws.cell(row=resumen_start + 1, column=1, value="Sindicato").font = Font(bold=True, size=10)
+    ws.cell(row=resumen_start + 1, column=2, value="Total litros").font = Font(bold=True, size=10)
+
+    resumen = {}
+    for r in registros:
+        key = r["sindicato"] or "SIN SINDICATO"
+        resumen[key] = resumen.get(key, 0) + r["litraje"]
+
+    for i, (s, t) in enumerate(resumen.items(), start=1):
+        ws.cell(row=resumen_start + 1 + i, column=1, value=s).font = Font(size=10)
+        ws.cell(row=resumen_start + 1 + i, column=2, value=t).font = Font(size=10)
+
+    # Total general en cuadro (merge 1–2, borde y fondo)
+    total_row = resumen_start + len(resumen) + 3
+    ws.merge_cells(start_row=total_row, start_column=1, end_row=total_row, end_column=2)
+    c = ws.cell(row=total_row, column=1, value=f"TOTAL GENERAL DE LITRAJE: {sum(resumen.values())}")
+    c.font = Font(bold=True, size=11)
+    c.alignment = Alignment(horizontal="center", vertical="center")
+    c.fill = PatternFill("solid", fgColor="D9D9D9")
+    c.border = Border(top=thin, left=thin, right=thin, bottom=thin)
+    ws.row_dimensions[total_row].height = 25
+
+    out = io.BytesIO()
+    wb.save(out)
+    out.seek(0)
+    return out
+
+def generar_reporte_pdf_response(**params):
+    buf = generar_reporte_pdf_bytes(**params)
+    filename = f"reporte_vehiculos_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.pdf"
+    return send_file(buf, mimetype="application/pdf", as_attachment=True, download_name=filename)
+
+
+def generar_reporte_excel_response(**params):
+    buf = generar_reporte_excel_bytes(**params)
+    filename = f"reporte_vehiculos_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.xlsx"
+    return send_file(buf, mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                      as_attachment=True, download_name=filename)
 
-# --- utilidades de archivos (mantengo las funciones existentes) ---
-
-def _upload_folder(carpeta=None):
-    """Devuelve la carpeta de subida (usa config o ./uploads)."""
-    base = current_app.config.get('UPLOAD_FOLDER') if has_app_context() else None
-    if carpeta:
-        return os.path.join(base or os.getcwd(), carpeta)
-    return base or os.path.join(os.getcwd(), 'uploads')
-
-def guardar_archivo(file_storage, carpeta=None):
-    if file_storage is None or file_storage.filename == '':
-        raise ValueError("No se proporcionó ningún archivo")
-    nombre_seguro = secure_filename(file_storage.filename)
-    nombre_unico = f"{uuid4().hex}_{nombre_seguro}"
-    folder = _upload_folder(carpeta)
-    os.makedirs(folder, exist_ok=True)
-    ruta = os.path.join(folder, nombre_unico)
-    file_storage.save(ruta)
-    size = os.path.getsize(ruta)
-    fecha = datetime.utcfromtimestamp(os.path.getmtime(ruta)).isoformat() + 'Z'
-    return {'filename': nombre_unico, 'original_name': nombre_seguro, 'size': size, 'fecha': fecha, 'path': ruta}
-
-def listar_archivos(carpeta=None):
-    folder = _upload_folder(carpeta)
-    if not os.path.isdir(folder):
-        return []
-    entradas = []
-    for fn in os.listdir(folder):
-        ruta = os.path.join(folder, fn)
-        if os.path.isfile(ruta):
-            mtime = os.path.getmtime(ruta)
-            entradas.append({'filename': fn, 'size': os.path.getsize(ruta),
-                             'fecha_modificacion': datetime.utcfromtimestamp(mtime).isoformat() + 'Z', 'path': ruta})
-    entradas.sort(key=lambda e: e['fecha_modificacion'], reverse=True)
-    return entradas
-
-def obtener_ruta_archivo(filename, carpeta=None):
-    folder = _upload_folder(carpeta)
-    ruta = os.path.join(folder, filename)
-    if not os.path.isfile(ruta):
-        raise FileNotFoundError(f"Archivo no encontrado: {filename}")
-    return ruta
-
-def eliminar_archivo(filename, carpeta=None):
-    try:
-        ruta = obtener_ruta_archivo(filename, carpeta=carpeta)
-    except FileNotFoundError:
-        return False
-    os.remove(ruta)
-    return True
-
-def descargar_archivo(filename, carpeta=None, as_attachment=True):
-    folder = _upload_folder(carpeta)
-    return send_from_directory(folder, filename, as_attachment=as_attachment)

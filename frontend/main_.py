@@ -8,9 +8,8 @@ from windows.chofer_window import ChoferesWindow
 from windows.cambios_window import CambiosWindow
 from windows.mantenimiento_window import MantenimientoWindow
 from windows.usuarios_window import UsuariosWindow
+from app_state import API_BASE, GlobalState
 from windows.archivos_window import ReportGUI
-from app_state import API_BASE, GlobalState 
-
 from styles import *
 
 
@@ -25,7 +24,7 @@ class MenuWindow(QMainWindow):
         self.frame_window = QFrame()
         self.frame_window.setLayout(QVBoxLayout())
         self.frame_buttons = QFrame()
-        # header frame (se usa para el título y controles superiores)
+        
         self.frame_header = QFrame()
 
         # panel de botones: ancho máximo inicial y estado collapsed

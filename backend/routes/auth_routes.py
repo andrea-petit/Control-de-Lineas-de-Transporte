@@ -29,7 +29,8 @@ def login():
         return jsonify({"error":"credenciales inválidas"}), 401
     token = create_access_token(identity=str(u.id_usuario))
     rol= u.rol 
-    return jsonify({"mensaje":"login correcto","access_token": token, "rol": rol }), 200
+    username= u.nombre
+    return jsonify({"mensaje":"login correcto","access_token": token, "rol": rol, "username": username}), 200
 
 
 @auth_bp.route('/editar/<int:id_usuario>', methods=['PUT'])

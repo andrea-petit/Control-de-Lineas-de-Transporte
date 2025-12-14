@@ -1,6 +1,8 @@
 import os
 import io
+import re
 import requests
+from datetime import datetime
 from app_state import API_BASE
 
 from PySide6.QtWidgets import (
@@ -16,7 +18,7 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 # Mapa de combo a lista de municipios reales
 MUNICIPIOS_MAP = {
-    "": [],
+    "": [],  # Todos
     "Carirubana": ["Carirubana"],
     "Los Taques / Falcón": ["Los Taques", "Falcón"]
 }
@@ -29,10 +31,13 @@ class WorkerSignals(QObject):
 class ReportWorker(QObject):
     signals = WorkerSignals()
 
-    def run_pdf(self, municipios, combustible):
+    def run_pdf(self, municipios, combustible, grupo=None):
         try:
-            params = {"municipios": ",".join(municipios) if municipios else None,
-                    "combustible": combustible}
+            params = {
+                "municipios": ",".join(municipios) if municipios else None,
+                "combustible": combustible,
+                "grupo": grupo
+            }
             r = requests.get(f"{API_BASE_URL}/api/reportes/pdf", params=params)
             if r.status_code != 200:
                 raise Exception(r.text)
@@ -41,10 +46,13 @@ class ReportWorker(QObject):
         except Exception as e:
             self.signals.finished.emit(False, str(e), None)
 
-    def run_xlsx(self, municipios, combustible):
+    def run_xlsx(self, municipios, combustible, grupo=None):
         try:
-            params = {"municipios": ",".join(municipios) if municipios else None,
-                    "combustible": combustible}
+            params = {
+                "municipios": ",".join(municipios) if municipios else None,
+                "combustible": combustible,
+                "grupo": grupo
+            }
             r = requests.get(f"{API_BASE_URL}/api/reportes/xlsx", params=params)
             if r.status_code != 200:
                 raise Exception(r.text)
@@ -74,18 +82,22 @@ class ReportGUI(QMainWindow):
         gb_filters.setLayout(fl)
         layout.addWidget(gb_filters)
 
-        # Municipio como drop-down
+        # Municipio
         self.cmb_municipios = QComboBox()
         self.cmb_municipios.addItems(list(MUNICIPIOS_MAP.keys()))
+        self.cmb_grupo = QComboBox()
+        self.cmb_grupo.addItems(["Todos", "A", "B", "C"])
 
         # Combustible
         self.cmb_comb = QComboBox()
-        self.cmb_comb.addItems(["", "diesel", "gasolina"])
+        self.cmb_comb.addItems(["", "Diésel", "Gasolina"])
 
         fl.addWidget(QLabel("Municipio:"))
         fl.addWidget(self.cmb_municipios)
         fl.addWidget(QLabel("Combustible:"))
         fl.addWidget(self.cmb_comb)
+        fl.addWidget(QLabel("Grupo:"))
+        fl.addWidget(self.cmb_grupo)
 
         # Botones PDF / Excel
         hb = QHBoxLayout()
@@ -133,10 +145,47 @@ class ReportGUI(QMainWindow):
         bottom.addWidget(btn_close)
 
     def collect_filters(self):
-        # Obtener lista de municipios reales del combo
+        # Municipio
         m = MUNICIPIOS_MAP.get(self.cmb_municipios.currentText(), [])
+        m = m if m else None
+
+        # Combustible
         c = self.cmb_comb.currentText().strip() or None
-        return m, c
+        c = c if c not in ("", "Todos") else None
+
+        # Grupo
+        g = self.cmb_grupo.currentText().strip() or None
+        g = g if g not in ("", "Todos") else None
+
+        return m, c, g
+
+    def build_default_filename(self, ext):
+        municipio_txt = self.cmb_municipios.currentText().strip().lower()
+        municipio = municipio_txt if municipio_txt else "todos"
+
+        comb_txt = self.cmb_comb.currentText().strip().lower()
+        combustible = comb_txt if comb_txt else "todos"
+
+        grupo_txt = self.cmb_grupo.currentText().strip().lower()
+        grupo = grupo_txt if grupo_txt and grupo_txt != "todos" else "todos"
+
+        def clean(text):
+            text = text.replace(" ", "_")
+            text = re.sub(r"[^a-z0-9_]", "", text)
+            return text
+
+        municipio = clean(municipio)
+        combustible = clean(combustible)
+        grupo = clean(grupo)
+
+        fecha = datetime.now().strftime("%Y-%m-%d")
+
+        if municipio == "todos" and combustible == "todos" and grupo == "todos":
+            name = f"reporte_todos_{fecha}"
+        else:
+            name = f"reporte_{municipio}_{combustible}_{grupo}_{fecha}"
+
+        return f"{name}{ext}"
 
     def _run_worker(self, method_name, args, finished_slot):
         thread = QThread()
@@ -156,14 +205,14 @@ class ReportGUI(QMainWindow):
         thread.start()
 
     def on_generate_pdf(self):
-        m, c = self.collect_filters()
+        m, c, g = self.collect_filters()
         self.lbl_status.setText("Generando PDF...")
-        self._run_worker("run_pdf", (m, c), self.on_finished_save)
+        self._run_worker("run_pdf", (m, c, g), self.on_finished_save)
 
     def on_generate_xlsx(self):
-        m, c = self.collect_filters()
+        m, c, g = self.collect_filters()
         self.lbl_status.setText("Generando Excel...")
-        self._run_worker("run_xlsx", (m, c), self.on_finished_save)
+        self._run_worker("run_xlsx", (m, c, g), self.on_finished_save)
 
     def on_finished_save(self, ok, msg, data):
         self.lbl_status.setText("")
@@ -177,10 +226,20 @@ class ReportGUI(QMainWindow):
         buf.seek(0)
         ext = ".pdf" if head.startswith(b"%PDF") else ".xlsx"
 
-        # Guardar archivo donde el usuario indique
-        fname, _ = QFileDialog.getSaveFileName(self, "Guardar archivo", f"reporte{ext}")
+        default_name = self.build_default_filename(ext)
+
+        fname, _ = QFileDialog.getSaveFileName(
+            self,
+            "Guardar archivo",
+            default_name,
+            f"Archivos (*{ext})"
+        )
+
         if not fname:
             return
+
+        if not fname.lower().endswith(ext):
+            fname += ext
 
         with open(fname, "wb") as f:
             f.write(buf.read())
@@ -229,3 +288,4 @@ class ReportGUI(QMainWindow):
             self.list_files()
         except Exception as e:
             QMessageBox.warning(self, "Error", str(e))
+

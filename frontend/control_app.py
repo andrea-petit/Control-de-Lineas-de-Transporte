@@ -214,6 +214,8 @@ class LoginWindow(QMainWindow):
             return
 
         GlobalState.token = token
+        GlobalState.usuario = data.get("username")
+        GlobalState.role= rol
         GlobalState.is_admin = (rol.lower() == "admin")
 
         alert_label.setText("Login correcto.")

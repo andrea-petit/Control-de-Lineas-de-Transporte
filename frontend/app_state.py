@@ -23,4 +23,5 @@ API_BASE = detect_api_url()
 class GlobalState:
     token = None
     usuario = None
+    role= None
     is_admin = False

@@ -10,7 +10,7 @@ from controllers.archivos_controllers import (
     generar_reporte_pdf_response,
     generar_reporte_excel_response
 )
-ALLOWED_COMBUSTIBLES = {'diesel', 'gasolina'}
+ALLOWED_COMBUSTIBLES = {'diésel', 'gasolina'}
 
 def _validate_combustible(c):
     if not c:

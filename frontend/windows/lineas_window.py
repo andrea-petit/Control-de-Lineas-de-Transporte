@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
-    QComboBox, QTableWidget, QTableWidgetItem, QMessageBox, QInputDialog, QHeaderView
+    QComboBox, QTableWidget, QTableWidgetItem, QMessageBox, QInputDialog, QHeaderView, QAbstractItemView
 )
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor, QPalette
@@ -47,6 +47,7 @@ class LineasWindow(QWidget):
 
     
         self.tabla = QTableWidget()
+        self.tabla.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.tabla.setColumnCount(2)  
         self.tabla.setHorizontalHeaderLabels(["Nombre de Organización", "Acciones"])
         self.tabla.horizontalHeader().setStretchLastSection(False)

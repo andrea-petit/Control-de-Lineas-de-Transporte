@@ -2,7 +2,7 @@ import requests
 from datetime import datetime
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QLabel, QTableWidget, QTableWidgetItem,
-    QHBoxLayout, QPushButton, QMessageBox, QLineEdit, QHeaderView
+    QHBoxLayout, QPushButton, QMessageBox, QLineEdit, QHeaderView, QAbstractItemView
 )
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor, QPalette
@@ -32,6 +32,7 @@ class CambiosWindow(QWidget):
 
 
         self.tabla = QTableWidget()
+        self.tabla.setEditTriggers(QAbstractItemView.NoEditTriggers)
         cols = ["Fecha", "Usuario", "Tipo", "Tabla", "Entidad", "Campo", "Descripción"]
         self.tabla.setColumnCount(len(cols))
         self.tabla.setHorizontalHeaderLabels(cols)

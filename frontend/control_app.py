@@ -1,10 +1,10 @@
-import sys, socket, requests
+import sys, socket, os
 from PySide6.QtWidgets import *
 from PySide6.QtCore import *
 from PySide6.QtGui import *
-from styles import estilos_menu, btnStyle, estilos_login, qcombostyle
+import styles
 import requests
-from app_state import API_BASE, GlobalState
+from app_state import API_BASE, GlobalState, resources_path
 from dialogs.reset_dialog import RecuperarPasswordDialog
 from dialogs.alert_dialog import AlertDialog
 
@@ -14,12 +14,12 @@ class LoginWindow(QMainWindow):
         self.setFixedSize(490,480)
         self.setFixedSize(520,460)
         self.setWindowTitle("Login | Control de Lineas")
-        self.setWindowIcon(QIcon("frontend/icons/bus.png"))
-        self.setStyleSheet("background: url(./frontend/img/Fondo.jpg)")
+        self.setWindowIcon(QIcon(resources_path("frontend/icons/bus.png").replace(os.sep, '/')))
+        self.setStyleSheet(f"background: url({resources_path('frontend/img/Fondo.jpg').replace(os.sep, '/')})")
 
         self.frameTitle = QFrame(self)
         self.frameTitle.setGeometry(33,22,460,80)
-        self.frameTitle.setStyleSheet(estilos_login)
+        self.frameTitle.setStyleSheet(styles.estilos_login)
 
         title_layout = QHBoxLayout(self.frameTitle)
         title_layout.setContentsMargins(8, 8, 8, 8)
@@ -28,7 +28,7 @@ class LoginWindow(QMainWindow):
         self.frameLogoLeft = QLabel()
         # ajustar altura para que quepa en el frameTitle (por ejemplo 60 en vez de 120)
         self.frameLogoLeft.setFixedSize(80, 55)
-        self.frameLogoLeft.setStyleSheet("border-image: url(./frontend/img/LogoIMTT TR.png) 0 0 0 0 stretch stretch;")
+        self.frameLogoLeft.setStyleSheet(f"border-image: url({resources_path('frontend/img/LogoIMTT TR.png').replace(os.sep, '/')}) 0 0 0 0 stretch stretch;")
         self.frameLogoLeft.setScaledContents(True)
 
         # añadir y forzar alineación vertical centrada
@@ -41,7 +41,7 @@ class LoginWindow(QMainWindow):
 
         self.frameLogoRight = QLabel()
         self.frameLogoRight.setFixedSize(85,55)
-        self.frameLogoRight.setStyleSheet("border-image: url(./frontend/img/LogoCariruB.png) 0 0 0 0 stretch stretch;")
+        self.frameLogoRight.setStyleSheet(f"border-image: url({resources_path('frontend/img/LogoCariruB.png').replace(os.sep, '/')}) 0 0 0 0 stretch stretch;")
         self.frameLogoRight.setScaledContents(True)
 
         title_layout.addWidget(self.frameLogoLeft, 0, Qt.AlignVCenter)
@@ -54,16 +54,16 @@ class LoginWindow(QMainWindow):
 
         self.Id_usuario = QLineEdit()
         self.Id_usuario.setPlaceholderText("Ingresa tu Cédula")
-        self.Id_usuario.setStyleSheet(estilos_login)
+        self.Id_usuario.setStyleSheet(styles.estilos_login)
 
         self.Password = QLineEdit()
         self.Password.setPlaceholderText("Ingresa tu Contraseña")
         self.Password.setEchoMode(QLineEdit.EchoMode.Password)
-        self.Password.setStyleSheet(estilos_login)
+        self.Password.setStyleSheet(styles.estilos_login)
 
         self.tipo_usuario = QComboBox()
         self.tipo_usuario.addItems(["Usuario", "Admin", "Servicio Técnico"])
-        self.tipo_usuario.setStyleSheet(qcombostyle)   
+        self.tipo_usuario.setStyleSheet(styles.qcombostyle)   
         self.tipo_usuario.currentIndexChanged.connect(self.cambio_tipo_usuario)
 
         self.btnLogin = QPushButton("Iniciar Sesión", objectName="btnLogin")
@@ -206,7 +206,7 @@ class LoginWindow(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    app.setWindowIcon(QIcon("frontend/img/autobus.png")) 
+    app.setWindowIcon(QIcon(resources_path("frontend/img/autobus.png"))) 
     window = LoginWindow()
     window.setup_ui()
     window.show()

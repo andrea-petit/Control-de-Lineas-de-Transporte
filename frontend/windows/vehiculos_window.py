@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
-    QComboBox, QTableWidget, QTableWidgetItem, QMessageBox, QInputDialog, QHeaderView
+    QComboBox, QTableWidget, QTableWidgetItem, QMessageBox, QInputDialog, QHeaderView, QAbstractItemView
 )
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor, QPalette
@@ -43,6 +43,7 @@ class VehiculosWindow(QWidget):
         layout.addWidget(self.label_titulo)
 
         self.tabla = QTableWidget()
+        self.tabla.setEditTriggers(QAbstractItemView.NoEditTriggers)
         columnas = [
             "ID", "Placa", "Marca", "Modelo", "Propietario", "Cédula",
             "Capacidad", "Litraje", "Sindicato", "Modalidad",

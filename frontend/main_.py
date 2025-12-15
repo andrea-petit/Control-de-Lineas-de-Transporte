@@ -8,7 +8,7 @@ from windows.chofer_window import ChoferesWindow
 from windows.cambios_window import CambiosWindow
 from windows.mantenimiento_window import MantenimientoWindow
 from windows.usuarios_window import UsuariosWindow
-from app_state import API_BASE, GlobalState
+from app_state import API_BASE, GlobalState, resources_path
 from windows.archivos_window import ReportGUI
 from styles import *
 from dialogs.alert_dialog import AlertDialog
@@ -18,7 +18,7 @@ class MenuWindow(QMainWindow):
     def menu_ui(self):
         self.setGeometry(150, 40, 1050, 670)
         self.setWindowTitle("Menu | Control de Lineas")
-        self.setWindowIcon(QIcon("frontend/icons/bus.png"))
+        self.setWindowIcon(QIcon(resources_path("frontend/icons/bus.png")))
 
         self.showMaximized()
 
@@ -81,13 +81,13 @@ class MenuWindow(QMainWindow):
         self.btn_logout = QPushButton("Cerrar sesión")
         
         icons = {
-            self.button1: "frontend/icons/lineas3.png",
-            self.button2: "frontend/icons/vehiculos2.png",
-            self.button3: "frontend/icons/choferes3.png",
-            self.button4: "frontend/icons/historial2.png",
-            self.button5: "frontend/icons/archivo2.png",
-            self.button6: "frontend/icons/adminuser2.png",
-            self.btn_logout: "frontend/icons/cerrar-sesion.png",
+            self.button1: resources_path("frontend/icons/lineas3.png"),
+            self.button2: resources_path("frontend/icons/vehiculos2.png"),
+            self.button3: resources_path("frontend/icons/choferes3.png"),
+            self.button4: resources_path("frontend/icons/historial2.png"),
+            self.button5: resources_path("frontend/icons/archivo2.png"),
+            self.button6: resources_path("frontend/icons/adminuser2.png"),
+            self.btn_logout: resources_path("frontend/icons/cerrar-sesion.png"),
         }
         for btn, path in icons.items():
             icon = QIcon(path) if path and QIcon(path) else QIcon()
@@ -136,7 +136,7 @@ class MenuWindow(QMainWindow):
         role = getattr(GlobalState, "role", "Usuario")
         self.user_label = QLabel()
         self.user_label.setTextFormat(Qt.RichText)
-        self.user_label.setText(f"<div style='text-align:center;'><b>{username}</b><br><span style='font-size:11px;color:#666;'>{role}</span></div>")
+        self.user_label.setText(f"<div style='text-align:center; color:black;'><b>{username}</b><br><span style='font-size:11px;color:black;'>{role}</span></div>")
         self.user_label.setAlignment(Qt.AlignCenter)
         self.user_label.setStyleSheet("padding: 4px;")
         self.buttons_layout.addWidget(self.user_label)
@@ -174,7 +174,7 @@ class MenuWindow(QMainWindow):
         # Botón Acerca de en el header (derecha)
         self.btn_about = QPushButton("Acerca de")
         self.btn_about.setCursor(Qt.PointingHandCursor)
-        self.btn_about.setIcon(QIcon("frontend/icons/info.png"))
+        self.btn_about.setIcon(QIcon(resources_path("frontend/icons/info.png")))
         self.btn_about.setStyleSheet("""
             QPushButton {
                 background-color: transparent;
@@ -443,7 +443,7 @@ class MenuWindow(QMainWindow):
 if __name__ == "__main__":
     from control_app import LoginWindow 
     app = QApplication(sys.argv)
-    app.setWindowIcon(QIcon("frontend/img/bus.png")) 
+    app.setWindowIcon(QIcon(resources_path("frontend/img/bus.png"))) 
     window = MenuWindow()
     window.menu_ui()
     window.show()

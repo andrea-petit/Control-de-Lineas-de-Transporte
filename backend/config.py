@@ -1,6 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_mail import Mail
 from datetime import timedelta
+from app_state import resources_path
 
 db = SQLAlchemy()
 mail= Mail()
@@ -18,5 +19,5 @@ class Config:
     MAIL_USE_TLS= True
     MAIL_USE_SSL= False
     MAIL_DEFAULT_SENDER = "optcontroldelineas@gmail.com"
-    REPORT_LOGO_LEFT = "frontend\img\LogoIMTT TR.png"
-    REPORT_LOGO_RIGHT = "frontend\img\LogoCariruB.png"
+    REPORT_LOGO_LEFT = resources_path("frontend/img/LogoIMTT TR.png")
+    REPORT_LOGO_RIGHT = resources_path("frontend/img/LogoCariruB.png")

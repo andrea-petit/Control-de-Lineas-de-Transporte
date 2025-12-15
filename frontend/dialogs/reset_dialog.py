@@ -2,7 +2,7 @@ import requests
 from PySide6.QtWidgets import *
 from PySide6.QtCore import *
 from PySide6.QtGui import *
-from app_state import API_BASE, GlobalState
+from app_state import API_BASE, GlobalState, resources_path
 from styles import reset_dialog
 from dialogs.alert_dialog import AlertDialog
 
@@ -10,7 +10,7 @@ class RecuperarPasswordDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Recuperar Contraseña")
-        self.setWindowIcon(QIcon("frontend/icons/clave.png"))
+        self.setWindowIcon(QIcon(resources_path("frontend/icons/clave.png")))
         self.resize(420, 200)
         self.layout = QVBoxLayout(self)
         self.setLayout(self.layout)

@@ -2,15 +2,19 @@ from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
     QTextEdit, QListWidget, QListWidgetItem, QSpinBox, QMessageBox
 )
+
+from PySide6.QtGui import QIcon
+
 from PySide6.QtCore import Qt
 import requests
-from app_state import API_BASE, GlobalState
+from app_state import API_BASE, GlobalState, resources_path
 
 
 class MantenimientoWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Mantenimiento / Servicio Técnico")
+        self.setWindowIcon(QIcon(resources_path("frontend/icons/bus.png")))
         self.resize(900, 600)
         self.setup_ui()
         self.cargar_resumen()

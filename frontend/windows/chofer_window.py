@@ -53,11 +53,12 @@ class ChoferesWindow(QWidget):
         self.tabla.setColumnCount(len(cols))
         self.tabla.setHorizontalHeaderLabels(cols)
         self.tabla.setAlternatingRowColors(True)
+        self.tabla.setEditTriggers(QTableWidget.NoEditTriggers)  # Deshabilitar edición directa
         self.tabla.setColumnWidth(0,60)
         self.tabla.setColumnWidth(1,260)
         self.tabla.setColumnWidth(2,140)
         self.tabla.setColumnWidth(3,240)
-        self.tabla.setColumnWidth(4,800)
+        self.tabla.setColumnWidth(4,550)
         self.tabla.setColumnHidden(0, True)
         self.tabla.horizontalHeader().setSectionResizeMode(QHeaderView.Fixed)
 
@@ -104,11 +105,14 @@ class ChoferesWindow(QWidget):
             self.tabla.setItem(row, 3, QTableWidgetItem(vehiculo + (" - " + marca_modelo if marca_modelo else "")))
 
             btn_editar = QPushButton("Editar")
+            btn_editar.setObjectName("btn_editar")
+            btn_editar.setStyleSheet(estilos_paginas)
             btn_eliminar = QPushButton("Eliminar")
+            btn_eliminar.setObjectName("btn_eliminar")
+            btn_eliminar.setStyleSheet(estilos_paginas)
             for btn in (btn_editar, btn_eliminar):
                 btn.setFixedSize(70,28)
                 btn.setCursor(Qt.PointingHandCursor)
-            btn_eliminar.setObjectName("btn_eliminar")
             btn_editar.clicked.connect(lambda _, _id=cid: self.editar_chofer(_id))
             btn_eliminar.clicked.connect(lambda _, _id=cid: self.eliminar_chofer(_id))
 

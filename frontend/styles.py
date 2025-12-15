@@ -1,3 +1,6 @@
+from app_state import resources_path
+import os
+
 estilos_menu = '''
     #centralwidget {
     background: #0B2E73;
@@ -112,7 +115,7 @@ qcombostyle = '''
     }
 
     QComboBox::down-arrow {
-        image: url(./frontend/img/flecha5.png);
+        image: url(''' + resources_path('frontend/img/flecha5.png').replace(os.sep, '/') + ''');
         width: 15px;
         height: 15px;
     }
@@ -267,7 +270,7 @@ estilos_archivos = """
         color: black;
     }
     QComboBox::down-arrow {
-        image: url(frontend/icons/down-arrow.png); /* si tienes icono, si no, usa default */
+        image: url(''' + resources_path('frontend/img/flecha5.png').replace(os.sep, '/') + '''); /* si tienes icono, si no, usa default */
         width: 12px;
         height: 12px;
         color: black;
@@ -425,6 +428,7 @@ estilos_paginas = """
     /* Tablas */
     QTableWidget {
         background-color: white;
+        color: black;
         alternate-background-color: #f9f9f9;
         border: 1px solid #ddd;
         selection-background-color: #e6f0ff;
@@ -445,12 +449,20 @@ estilos_paginas = """
         background-color: #4d79ff;
         color: white;
         border-radius: 6px;
-        padding: 6px 12px;
+        padding: 4px 10px;
+        font-size: 13px;
         font-weight: 600;
         border: none;
     }
 
     QPushButton:hover {
+        background-color: #3355cc;
+    }
+
+    QPushButton#btn_editar {
+        background-color: #4d79ff;
+    }
+    QPushButton#btn_editar:hover {
         background-color: #3355cc;
     }
 

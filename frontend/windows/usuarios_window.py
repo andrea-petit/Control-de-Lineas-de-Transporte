@@ -6,6 +6,7 @@ from PySide6.QtCore import Qt
 import requests
 from app_state import API_BASE, GlobalState
 from dialogs.usuario_dialog import UsuarioDialog
+from dialogs.alert_dialog import AlertDialog
 
 
 class UsuariosWindow(QWidget):
@@ -21,7 +22,7 @@ class UsuariosWindow(QWidget):
 
         top = QHBoxLayout()
         lbl = QLabel("Usuarios")
-        lbl.setStyleSheet("font-weight: bold; font-size: 16px;")
+        lbl.setStyleSheet("font-weight: bold; font-size: 16px; color: black;")
         top.addWidget(lbl)
         # top.addStretch()
         btn_add = QPushButton("Nuevo Usuario")
@@ -62,9 +63,9 @@ class UsuariosWindow(QWidget):
                 usuarios = [u for u in usuarios if (u.get("rol","").lower() not in ("servicio", "servicio tecnico", "tecnico"))]
                 self.mostrar_usuarios(usuarios)
             else:
-                QMessageBox.warning(self, "Error", f"No se pudieron cargar usuarios ({r.status_code})")
+                AlertDialog.warning(self, "Error", f"No se pudieron cargar usuarios ({r.status_code})")
         except requests.RequestException as e:
-            QMessageBox.critical(self, "Error", f"No se pudo conectar: {e}")
+            AlertDialog.critical(self, "Error", f"No se pudo conectar: {e}")
 
     def clear_grid(self):
         while self.grid.count():
@@ -112,7 +113,7 @@ class UsuariosWindow(QWidget):
             #     v.addWidget(QLabel(nombre))
             if email:
                 lbl_e = QLabel(f"Correo: {email}")
-                lbl_e.setStyleSheet("color:#555; font-size:12px;")
+                lbl_e.setStyleSheet("font-size:12px; color:black;")
                 v.addWidget(lbl_e)
             h = QHBoxLayout()
             btn_edit = QPushButton("Editar")
@@ -122,15 +123,15 @@ class UsuariosWindow(QWidget):
             v.addLayout(h)
         else:
             lbl_nom = QLabel(f"<b>{nombre}</b>")
-            lbl_nom.setStyleSheet("font-size:14px;")
+            lbl_nom.setStyleSheet("font-size:14px; color:black;")
             lbl_nom.setAlignment(Qt.AlignCenter)
             v.addWidget(lbl_nom)
             lbl_id = QLabel(f"Cédula: {uid}")
-            lbl_id.setStyleSheet("color:#333; font-size:11px;")
+            lbl_id.setStyleSheet("font-size:11px; color:black;")
             v.addWidget(lbl_id)
-  
+
             lbl_email = QLabel(f"Correo: {email}")
-            lbl_email.setStyleSheet("color:#555; font-size:12px;")
+            lbl_email.setStyleSheet("font-size:12px; color:black;")
             v.addWidget(lbl_email)
 
             h = QHBoxLayout()
@@ -151,68 +152,67 @@ class UsuariosWindow(QWidget):
         if dlg.exec():
             payload = dlg.get_payload()
             if not payload or not payload.get("nombre") or not payload.get("email") or not payload.get("password"):
-                QMessageBox.warning(self, "Campos incompletos", "Nombre, email y password son obligatorios.")
+                AlertDialog.warning(self, "Campos incompletos", "Nombre, email y password son obligatorios.")
                 return
             try:
                 r = requests.post(f"{API_BASE}/api/auth/usuarios", json=payload, headers=self._auth_headers(), timeout=8)
                 if r.status_code in (200, 201):
-                    QMessageBox.information(self, "Éxito", "Usuario creado.")
+                    AlertDialog.information(self, "Éxito", "Usuario creado.")
                     self.cargar_usuarios()
                 else:
                     detalle = r.text
                     try: detalle = r.json()
                     except Exception: pass
-                    QMessageBox.warning(self, "Error", f"No se pudo crear usuario ({r.status_code}): {detalle}")
+                    AlertDialog.warning(self, "Error", f"No se pudo crear usuario ({r.status_code}): {detalle}")
             except requests.RequestException as e:
-                QMessageBox.critical(self, "Error", f"No se pudo conectar: {e}")
+                AlertDialog.critical(self, "Error", f"No se pudo conectar: {e}")
 
     def editar_usuario(self, id_usuario):
         try:
             r = requests.get(f"{API_BASE}/api/auth/usuarios/{id_usuario}", headers=self._auth_headers(), timeout=6)
             if not r.ok:
-                QMessageBox.warning(self, "Error", "No se pudo obtener usuario")
+                AlertDialog.warning(self, "Error", "No se pudo obtener usuario")
                 return
             usuario = r.json() or {}
             dlg = UsuarioDialog(self, modo="edit", usuario=usuario)
             if dlg.exec():
                 payload = dlg.get_payload()
                 if not payload:
-                    QMessageBox.warning(self, "Error", "Payload vacío")
+                    AlertDialog.warning(self, "Error", "Payload vacío")
                     return
                 try:
                     r2 = requests.put(f"{API_BASE}/api/auth/editar/{id_usuario}", json=payload, headers=self._auth_headers(), timeout=8)
                     if r2.status_code == 200:
-                        QMessageBox.information(self, "Éxito", "Usuario actualizado.")
+                        AlertDialog.information(self, "Éxito", "Usuario actualizado.")
                         self.cargar_usuarios()
                     else:
                         detalle = r2.text
                         try: detalle = r2.json()
                         except Exception: pass
-                        QMessageBox.warning(self, "Error", f"No se pudo actualizar ({r2.status_code}): {detalle}")
+                        AlertDialog.warning(self, "Error", f"No se pudo actualizar ({r2.status_code}): {detalle}")
                 except requests.RequestException as e:
-                    QMessageBox.critical(self, "Error", f"No se pudo conectar: {e}")
+                    AlertDialog.critical(self, "Error", f"No se pudo conectar: {e}")
         except requests.RequestException as e:
-            QMessageBox.critical(self, "Error", f"No se pudo conectar: {e}")
+            AlertDialog.critical(self, "Error", f"No se pudo conectar: {e}")
 
     def eliminar_usuario(self, id_usuario):
         token = getattr(GlobalState, "token", None)
         if not token:
-            QMessageBox.warning(self, "No autorizado", "Debes iniciar sesión.")
+            AlertDialog.warning(self, "No autorizado", "Debes iniciar sesión.")
             return
-        resp = QMessageBox.question(self, "Confirmar eliminación",
-                                    "¿Está seguro de eliminar este usuario?",
-                                    QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
-        if resp != QMessageBox.Yes:
+
+        if not AlertDialog.question(self, "Confirmar eliminación", "¿Está seguro de eliminar este usuario?"):
             return
+
         try:
             r = requests.delete(f"{API_BASE}/api/auth/eliminar/{id_usuario}", headers=self._auth_headers(), timeout=8)
             if r.status_code == 200:
-                QMessageBox.information(self, "Éxito", "Usuario eliminado.")
+                AlertDialog.information(self, "Éxito", "Usuario eliminado.")
                 self.cargar_usuarios()
             else:
                 detalle = r.text
                 try: detalle = r.json()
                 except Exception: pass
-                QMessageBox.warning(self, "Error", f"No se pudo eliminar ({r.status_code}): {detalle}")
+                AlertDialog.warning(self, "Error", f"No se pudo eliminar ({r.status_code}): {detalle}")
         except requests.RequestException as e:
-            QMessageBox.critical(self, "Error", f"No se pudo conectar: {e}")
+            AlertDialog.critical(self, "Error", f"No se pudo conectar: {e}")

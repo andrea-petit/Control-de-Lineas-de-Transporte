@@ -1,6 +1,8 @@
 import requests
+import os
+import sys
 
-SERVER_IP = "192.168.0.84"
+SERVER_IP = "192.168.0.105"
 PORT = 5000
 
 def detect_api_url():
@@ -19,6 +21,14 @@ def detect_api_url():
     return f"http://{SERVER_IP}:{PORT}"
 
 API_BASE = detect_api_url()
+
+
+def resources_path(relative_path):
+    if hasattr(sys, "_MEIPASS"):
+        return os.path.join(sys._MEIPASS, relative_path)
+    # Use the directory containing this file as the base
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(base_dir, relative_path)
 
 class GlobalState:
     token = None

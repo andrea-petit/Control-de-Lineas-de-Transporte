@@ -32,6 +32,7 @@ class LineaDialog(QDialog):
 
         layout.addWidget(QLabel("Municipio:"))
         self.combo_municipio = QComboBox()
+        self.combo_municipio.setStyleSheet(estilos_formularios + "QComboBox { color: black; } QComboBox QAbstractItemView { color: black; }")
         layout.addWidget(self.combo_municipio)
 
         layout.addWidget(QLabel("Descripción (registro de cambio):"))

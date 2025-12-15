@@ -17,7 +17,7 @@ from dialogs.alert_dialog import AlertDialog
 class MenuWindow(QMainWindow):
     def menu_ui(self):
         self.setGeometry(150, 40, 1050, 670)
-        self.setWindowTitle("Menu | Control de Lineas")
+        self.setWindowTitle("Menu | Control de Lineas | I.M.T.T")
         self.setWindowIcon(QIcon(resources_path("frontend/icons/bus.png")))
 
         self.showMaximized()
@@ -36,11 +36,11 @@ class MenuWindow(QMainWindow):
 
         # botón pequeño en el header para volver a abrir/ocultar el panel
         self.menu_toggle_btn = QPushButton("☰")
-        self.menu_toggle_btn.setStyleSheet("background-color: transparent; border: none;")
+        self.menu_toggle_btn.setStyleSheet("background-color: transparent; border: none; font-size: 20px;")
         self.menu_toggle_btn.setFixedSize(36, 36)
         self.menu_toggle_btn.setCursor(Qt.PointingHandCursor)
         self.menu_toggle_btn.setToolTip("Mostrar/ocultar menú")
-        self.menu_toggle_btn.clicked.connect(self.toggle_buttons_panel)
+        self.menu_toggle_btn.clicked.connect(lambda: self.toggle_buttons_panel())
 
         self.root_layout = QHBoxLayout()
         self.right_container = QWidget()
@@ -69,6 +69,9 @@ class MenuWindow(QMainWindow):
         self.setCentralWidget(self.widget)
         self.setup_buttons_frames()
         self.setStyleSheet(estilos_menu)
+        
+        # Mostrar mensaje de bienvenida en frame_window
+        self.mostrar_bienvenida()
 
 
     def setup_buttons_frames(self):
@@ -162,8 +165,8 @@ class MenuWindow(QMainWindow):
         title_layout.setSpacing(4)
 
 
-        title = QLabel("Instituto Municipal de Tránsito y Transporte")
-        title.setStyleSheet("font-size: 22px; font-weight: bold; color: #111;")
+        title = QLabel("INSTITUTO MUNICIPAL DE TRÁNSITO Y TRANSPORTE")
+        title.setStyleSheet("font-family: 'arialTIME'; font-size: 22px; font-weight: bold; color: #111;")
         title.setAlignment(Qt.AlignCenter)
 
         title_layout.addWidget(title)
@@ -198,10 +201,14 @@ class MenuWindow(QMainWindow):
         Si collapsed es None invierte el estado, si es True fuerza retraer.
         """
         if collapsed is None:
-            collapsed = not getattr(self, "buttons_collapsed", False)
+            # Invertir el estado actual
+            collapsed = not self.buttons_collapsed
 
         start = self.frame_buttons.width()
         end = self.frame_buttons.minimumWidth() if collapsed else 240
+
+        # Actualizar el estado ANTES de la animación
+        self.buttons_collapsed = collapsed
 
         # cancelar animación anterior si existe
         if self._panel_anim is not None and self._panel_anim.state() == QPropertyAnimation.Running:
@@ -214,7 +221,6 @@ class MenuWindow(QMainWindow):
         anim.setEasingCurve(QEasingCurve.InOutCubic)
         anim.start()
         self._panel_anim = anim
-        self.buttons_collapsed = collapsed
 
         # cambiar texto / icono según estado
         for btn in (self.button1, self.button2, self.button3, self.button4, self.button5, self.button6, self.btn_logout):
@@ -233,6 +239,46 @@ class MenuWindow(QMainWindow):
                 btn.setIcon(QIcon())            # ocultar icono cuando esté expandido
                 btn.setToolTip("")
                 btn.setStyleSheet(btn.styleSheet() + " QPushButton { text-align: center; }")
+        
+        # Ocultar/mostrar el label de usuario según el estado
+        if hasattr(self, 'user_label'):
+            self.user_label.setVisible(not collapsed)
+
+
+    def mostrar_bienvenida(self):
+        """Muestra un mensaje de bienvenida con el nombre del usuario en frame_window"""
+        if self.frame_window.layout() is None:
+            self.frame_window.setLayout(QVBoxLayout())
+        layout = self.frame_window.layout()
+        while layout.count():
+            item = layout.takeAt(0)
+            w = item.widget()
+            if w:
+                w.setParent(None)
+        
+        # Obtener nombre del usuario
+        username = getattr(GlobalState, "username", getattr(GlobalState, "usuario", "Usuario"))
+        
+        # Crear widget de bienvenida
+        welcome_widget = QWidget()
+        welcome_widget.setStyleSheet("background-color: white; border-radius: 10px;")
+        welcome_layout = QVBoxLayout(welcome_widget)
+        welcome_layout.setAlignment(Qt.AlignCenter)
+        welcome_layout.setContentsMargins(40, 40, 40, 40)
+        
+        # Mensaje de bienvenida
+        lbl_welcome = QLabel(f"¡Bienvenid@, {username}!")
+        lbl_welcome.setStyleSheet("font-size: 36px; font-weight: bold; color: #012d51; margin-bottom: 20px;")
+        lbl_welcome.setAlignment(Qt.AlignCenter)
+        
+        lbl_subtitle = QLabel("Selecciona una opción del menú para comenzar")
+        lbl_subtitle.setStyleSheet("font-size: 18px; color: #666;")
+        lbl_subtitle.setAlignment(Qt.AlignCenter)
+        
+        welcome_layout.addWidget(lbl_welcome)
+        welcome_layout.addWidget(lbl_subtitle)
+        
+        layout.addWidget(welcome_widget)
 
     # Llamar a toggle al abrir una sección para retraer el menú automáticamente
     def abrir_lineas(self):

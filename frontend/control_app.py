@@ -13,7 +13,7 @@ class LoginWindow(QMainWindow):
     def setup_ui(self):
         self.setFixedSize(490,480)
         self.setFixedSize(520,460)
-        self.setWindowTitle("Login | Control de Lineas")
+        self.setWindowTitle("Login | Control de Lineas | I.M.T.T")
         self.setWindowIcon(QIcon(resources_path("frontend/icons/bus.png").replace(os.sep, '/')))
         self.setStyleSheet(f"background: url({resources_path('frontend/img/Fondo.jpg').replace(os.sep, '/')})")
 

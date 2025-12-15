@@ -16,7 +16,7 @@ class VehiculoDialog(QDialog):
         self.setWindowTitle("Editar Vehículo" if self.modo_edicion else "Nuevo Vehículo")
         self.resize(500, 500)
         self.setup_ui()
-        self.setStyleSheet(estilos_formularios)
+        self.setStyleSheet(estilos_formularios + "QComboBox { color: black; } QComboBox QAbstractItemView { color: black; }")
 
         if self.modo_edicion:
             self.cargar_datos()

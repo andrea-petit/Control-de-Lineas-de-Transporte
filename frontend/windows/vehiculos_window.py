@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
-    QComboBox, QTableWidget, QTableWidgetItem, QMessageBox, QInputDialog
+    QComboBox, QTableWidget, QTableWidgetItem, QMessageBox, QInputDialog, QHeaderView
 )
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor, QPalette
@@ -8,7 +8,8 @@ import requests
 
 from app_state import API_BASE, GlobalState
 from dialogs.vehiculo_dialog import VehiculoDialog
-from dialogs.chofer_asignado_dialog import ChoferAsignadoDialog  
+from dialogs.chofer_asignado_dialog import ChoferAsignadoDialog
+from styles import estilos_paginas  
 
 
 class VehiculosWindow(QWidget):
@@ -19,6 +20,7 @@ class VehiculosWindow(QWidget):
         self.vehiculos_cache = []
         self.setup_ui()
         self.cargar_lineas()
+        self.setStyleSheet(estilos_paginas)
 
     def setup_ui(self):
         layout = QVBoxLayout(self)
@@ -37,7 +39,7 @@ class VehiculosWindow(QWidget):
 
         self.label_titulo = QLabel("Vehículos")
         self.label_titulo.setAlignment(Qt.AlignCenter)
-        self.label_titulo.setStyleSheet("font-weight:bold; font-size:16px; margin:8px;")
+        self.label_titulo.setObjectName("titulo")
         layout.addWidget(self.label_titulo)
 
         self.tabla = QTableWidget()
@@ -50,31 +52,15 @@ class VehiculosWindow(QWidget):
         self.tabla.setColumnCount(len(columnas))
         self.tabla.setHorizontalHeaderLabels(columnas)
         self.tabla.setColumnHidden(0, True)
+        self.tabla.horizontalHeader().setSectionResizeMode(QHeaderView.Fixed)
 
-        self.tabla.setStyleSheet("""
-            QTableWidget {
-                background-color: #ffffff;
-                alternate-background-color: #f2f6ff;
-                border: 1px solid #d0d7e2;
-                gridline-color: #d0d7e2;
-                font-size: 13px;
-            }
-            QHeaderView::section {
-                background-color: #e3e9f5;
-                border: 1px solid #c7cdd8;
-                font-weight: bold;
-            }
-        """)
+        # Inline style removed, using global style
 
         layout.addWidget(self.tabla)
 
         btns = QHBoxLayout()
         self.btn_agregar = QPushButton("Agregar Vehículo")
-        self.btn_agregar.setStyleSheet('''background: #012d51;
-                                        color: white;
-                                        padding: 15px;
-                                        border-radius: 10px;
-                                        font-size: 13px;''')
+        self.btn_agregar.setCursor(Qt.PointingHandCursor)
         self.btn_agregar.clicked.connect(self.agregar_vehiculo)
         btns.addWidget(self.btn_agregar)
         btns.addStretch()
@@ -163,6 +149,11 @@ class VehiculosWindow(QWidget):
             btn_editar = QPushButton("Editar")
             btn_eliminar = QPushButton("Eliminar")
             btn_chofer = QPushButton("Chofer")
+
+            for btn in (btn_editar, btn_eliminar, btn_chofer):
+                btn.setCursor(Qt.PointingHandCursor)
+            
+            btn_eliminar.setObjectName("btn_eliminar")
 
             btn_editar.clicked.connect(lambda _, _id=vid: self.editar_vehiculo(_id))
             btn_eliminar.clicked.connect(lambda _, _id=vid: self.eliminar_vehiculo(_id))

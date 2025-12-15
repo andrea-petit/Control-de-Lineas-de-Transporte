@@ -6,6 +6,7 @@ from styles import estilos_menu, btnStyle, estilos_login, qcombostyle
 import requests
 from app_state import API_BASE, GlobalState
 from dialogs.reset_dialog import RecuperarPasswordDialog
+from dialogs.alert_dialog import AlertDialog
 
 
 class LoginWindow(QMainWindow):
@@ -133,44 +134,8 @@ class LoginWindow(QMainWindow):
             self.Id_usuario.setEnabled(True)
 
     def do_login(self):
-
-
-        alert = QDialog(self)
-        alert.setWindowTitle("Warning...!!!")
-        alert.setWindowIcon(QIcon("frontend/img/bus.png"))
-        alert.setFixedSize(340,100)
-        alert.setStyleSheet("background: white; color: black;")
-        #alert_frame = QFrame(alert)
-        #alert_frame.setGeometry(0, 0, 340, 100)
-        #alert_icon = QLabel(alert_frame)
-        #alert_icon.setGeometry(20, 15, 50, 50)
-        #alert_icon.setStyleSheet("border-image: url(./frontend/img/alert.png) 0 0 0 0 stretch stretch;")
-        v = QVBoxLayout(alert)
-        h = QHBoxLayout()
-        v.addStretch()
-        alert_label = QLabel("Aviso, Ingrese cédula y contraseña")
-        alert_label.setStyleSheet("font-size:14px; font-weight:bold;")
-        v.addWidget(alert_label, 0, Qt.AlignCenter)
-        h.addStretch()
-        alert_btn = QPushButton("OK")
-        alert_btn.setCursor(Qt.PointingHandCursor)
-        alert_btn.setStyleSheet('''QPushButton {background: #012d51;
-                                    color: white;
-                                    padding: 8px 40px 8px 40px;
-                                    border-radius: 10px;
-                                    font-size: 13px;
-                                    margin-top: 10px
-                                    }
-                                    QPushButton:hover {
-                                    background: #024a7a
-                                    }
-                                    QPushButton:pressed {
-                                    background: #011826;
-                                    }''')
-        alert_btn.clicked.connect(alert.accept)
-        h.addWidget(alert_btn)
-        h.addStretch()
-        v.addLayout(h)
+        # We will use AlertDialog here
+        pass
 
         if self.tipo_usuario.currentText() == "Admin":
             cedula = "1"
@@ -181,16 +146,13 @@ class LoginWindow(QMainWindow):
 
         pwd = self.Password.text().strip()
         if not cedula or not pwd:
-            alert.exec()
-            #QMessageBox.warning(self, "Aviso", "Ingrese cédula y contraseña")
+            AlertDialog.warning(self, "Aviso", "Ingrese cédula y contraseña")
             return
 
         try:
             r = requests.post(f"{API_BASE}/api/auth/login", json={"id_usuario": cedula, "password": pwd}, timeout=6)
         except Exception as e:
-            alert_label.setText("No se pudo conectar al servidor.")
-            alert.show()
-            #QMessageBox.critical(self, "Error", f"No se pudo conectar al servidor: {e}")
+            AlertDialog.critical(self, "Error", f"No se pudo conectar al servidor: {e}")
             return
 
         if not r.ok:
@@ -198,9 +160,7 @@ class LoginWindow(QMainWindow):
                 msg = r.json()
             except:
                 msg = r.text
-            alert_label.setText("Login fallido: " + str(msg))
-            alert.show()
-            #QMessageBox.warning(self, "Login fallido", str(msg))
+            AlertDialog.warning(self, "Login fallido", str(msg))
             return
 
         data = r.json()
@@ -208,9 +168,7 @@ class LoginWindow(QMainWindow):
         rol = data.get("rol", "usuario")
 
         if not token:
-            alert_label.setText("Respuesta inválida del servidor (no token).")
-            alert.show()
-            #QMessageBox.critical(self, "Error", "Respuesta inválida del servidor (no token)")
+            AlertDialog.critical(self, "Error", "Respuesta inválida del servidor (no token)")
             return
 
         GlobalState.token = token
@@ -218,30 +176,28 @@ class LoginWindow(QMainWindow):
         GlobalState.role= rol
         GlobalState.is_admin = (rol.lower() == "admin")
 
-        alert_label.setText("Login correcto.")
-        alert.show()
-        #QMessageBox.information(self, "OK", "Login correcto")
+        # Success login
+        AlertDialog.information(self, "Bienvenido", "Login correcto")
         
-        if alert.exec() == QDialog.Accepted:
-            try:
-                if self.tipo_usuario.currentText() == "Servicio Técnico":
-                    from windows.mantenimiento_window import MantenimientoWindow
-                    self.hide()
-                    self.mantenimiento_window = MantenimientoWindow()
-                    self.mantenimiento_window.show()
-                else:
-                    from main_ import MenuWindow
-                    self.hide()
-                    self.main_window = MenuWindow()
-                    try:
-                        self.main_window.menu_ui()
-                    except Exception:
-                        pass
-                    self.main_window.show()
-            except Exception as e:
-                alert_label.setText("No se pudo abrir la ventana: " + str(e))
-                alert.show()
-                return
+        # Proceed
+        try:
+            if self.tipo_usuario.currentText() == "Servicio Técnico":
+                from windows.mantenimiento_window import MantenimientoWindow
+                self.hide()
+                self.mantenimiento_window = MantenimientoWindow()
+                self.mantenimiento_window.show()
+            else:
+                from main_ import MenuWindow
+                self.hide()
+                self.main_window = MenuWindow()
+                try:
+                    self.main_window.menu_ui()
+                except Exception:
+                    pass
+                self.main_window.show()
+        except Exception as e:
+            AlertDialog.critical(self, "Error", f"No se pudo abrir la ventana: {e}")
+            return
 
     def mostrar_recuperacion(self):
         dlg = RecuperarPasswordDialog()

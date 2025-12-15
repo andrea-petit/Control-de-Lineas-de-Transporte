@@ -5,6 +5,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt
 from app_state import API_BASE, GlobalState
+from styles import estilos_formularios
 
 
 class ChoferAsignadoDialog(QDialog):
@@ -52,13 +53,13 @@ class ChoferAsignadoDialog(QDialog):
         self.resize(420, 260)
         self.mode = "edit" if isinstance(self.chofer, dict) and (self.chofer.get("nombre") or self.chofer.get("cedula")) else "add"
         self.setup_ui(placa, marca_modelo)
+        self.setStyleSheet(estilos_formularios)
 
     def setup_ui(self, placa, marca_modelo):
         layout = QVBoxLayout(self)
 
         lbl_title = QLabel(f"Vehículo: {marca_modelo}: {placa}")
         lbl_title.setAlignment(Qt.AlignCenter)
-        lbl_title.setStyleSheet("font-weight: bold; font-size: 14px;")
         layout.addWidget(lbl_title)
 
         if self.mode == "add":
@@ -73,6 +74,10 @@ class ChoferAsignadoDialog(QDialog):
             btns = QHBoxLayout()
             btn_add = QPushButton("Agregar")
             btn_cancel = QPushButton("Cancelar")
+            btn_cancel.setObjectName("cancelar")
+            btn_add.setCursor(Qt.PointingHandCursor)
+            btn_cancel.setCursor(Qt.PointingHandCursor)
+            
             btn_add.clicked.connect(self.guardar)
             btn_cancel.clicked.connect(self.reject)
             btns.addWidget(btn_add)
@@ -102,6 +107,10 @@ class ChoferAsignadoDialog(QDialog):
             btns = QHBoxLayout()
             btn_save = QPushButton("Guardar cambio")
             btn_cancel = QPushButton("Cancelar")
+            btn_cancel.setObjectName("cancelar")
+            btn_save.setCursor(Qt.PointingHandCursor)
+            btn_cancel.setCursor(Qt.PointingHandCursor)
+
             btn_save.clicked.connect(self.guardar)
             btn_cancel.clicked.connect(self.reject)
             btns.addWidget(btn_save)

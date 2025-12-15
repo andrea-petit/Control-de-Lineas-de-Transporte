@@ -4,6 +4,7 @@ from PySide6.QtCore import *
 from PySide6.QtGui import *
 from app_state import API_BASE, GlobalState
 from styles import reset_dialog
+from dialogs.alert_dialog import AlertDialog
 
 class RecuperarPasswordDialog(QDialog):
     def __init__(self, parent=None):
@@ -25,6 +26,9 @@ class RecuperarPasswordDialog(QDialog):
         self.limpiar_layout()
         self.label2 = QLabel("Ingresa tu cédula:")
         self.input_cedula = QLineEdit()
+        # Set placeholder text if desired
+        # self.input_cedula.setPlaceholderText("Ej: 12345678")
+        
         self.btn_enviar = QPushButton("Enviar código")
         self.btn_enviar.clicked.connect(self.enviar_otp)
         self.btn_cancelar = QPushButton("Cancelar")
@@ -40,28 +44,29 @@ class RecuperarPasswordDialog(QDialog):
         self.layout.addWidget(self.label)
         self.layout.addLayout(btns)
 
+
     def enviar_otp(self):
         cedula = self.input_cedula.text().strip()
         if not cedula:
-            QMessageBox.warning(self, "Error", "Debes ingresar tu cédula")
+            AlertDialog.warning(self, "Error", "Debes ingresar la cédula")
             return
         try:
             r = requests.get(f"{API_BASE}/api/auth/email/{cedula}", timeout=6)
             if r.ok:
                 self.id_usuario = cedula
-                QMessageBox.information(self, "Éxito", "Código enviado a tu correo")
+                AlertDialog.information(self, "Éxito", "Código enviado a tu correo")
                 self.init_paso2()
             else:
                 detalle = r.json().get("error", r.text)
-                QMessageBox.warning(self, "Error", detalle)
+                AlertDialog.warning(self, "Error", detalle)
         except requests.RequestException as e:
-            QMessageBox.critical(self, "Error", f"No se pudo conectar: {e}")
+            AlertDialog.critical(self, "Error", f"No se pudo conectar: {e}")
 
 
     def init_paso2(self):
         self.limpiar_layout()
         self.label = QLabel("Ingresa el código recibido:")
-        self.label = QLabel("Tu código expira en 5 minutos")
+        self.label_info = QLabel("Tu código expira en 5 minutos") # Renamed to avoid overwrite
         self.input_otp = QLineEdit()
         self.btn_verificar = QPushButton("Verificar")
         self.btn_verificar.clicked.connect(self.verificar_otp)
@@ -70,7 +75,7 @@ class RecuperarPasswordDialog(QDialog):
         self.btn_cancelar.clicked.connect(self.reject)
 
         self.layout.addWidget(self.label)
-        self.layout.addWidget(self.label2)
+        self.layout.addWidget(self.label_info)
         self.layout.addWidget(self.input_otp)
         btns = QHBoxLayout()
         btns.addWidget(self.btn_verificar)
@@ -80,7 +85,7 @@ class RecuperarPasswordDialog(QDialog):
     def verificar_otp(self):
         otp = self.input_otp.text().strip()
         if not otp:
-            QMessageBox.warning(self, "Error", "Debes ingresar el OTP")
+            AlertDialog.warning(self, "Error", "Debes ingresar el OTP")
             return
         try:
             r = requests.post(f"{API_BASE}/api/auth/verificar_otp", json={
@@ -88,13 +93,13 @@ class RecuperarPasswordDialog(QDialog):
                 "otp": otp
             }, timeout=6)
             if r.ok:
-                QMessageBox.information(self, "Éxito", "OTP verificado")
+                AlertDialog.information(self, "Éxito", "OTP verificado")
                 self.init_paso3()
             else:
                 detalle = r.json().get("error", r.text)
-                QMessageBox.warning(self, "Error", detalle)
+                AlertDialog.warning(self, "Error", detalle)
         except requests.RequestException as e:
-            QMessageBox.critical(self, "Error", f"No se pudo conectar: {e}")
+            AlertDialog.critical(self, "Error", f"No se pudo conectar: {e}")
 
     def init_paso3(self):
         self.limpiar_layout()
@@ -117,7 +122,7 @@ class RecuperarPasswordDialog(QDialog):
     def reset_password(self):
         new_pass = self.input_pass.text().strip()
         if not new_pass:
-            QMessageBox.warning(self, "Error", "Debes ingresar la nueva contraseña")
+            AlertDialog.warning(self, "Error", "Debes ingresar la nueva contraseña")
             return
         try:
             r = requests.post(f"{API_BASE}/api/auth/reset_password", json={
@@ -125,13 +130,13 @@ class RecuperarPasswordDialog(QDialog):
                 "new_password": new_pass
             }, timeout=6)
             if r.ok:
-                QMessageBox.information(self, "Éxito", "Contraseña cambiada correctamente")
+                AlertDialog.information(self, "Éxito", "Contraseña cambiada correctamente")
                 self.accept()
             else:
                 detalle = r.json().get("error", r.text)
-                QMessageBox.warning(self, "Error", detalle)
+                AlertDialog.warning(self, "Error", detalle)
         except requests.RequestException as e:
-            QMessageBox.critical(self, "Error", f"No se pudo conectar: {e}")
+            AlertDialog.critical(self, "Error", f"No se pudo conectar: {e}")
 
     def limpiar_layout(self):
         while self.layout.count():

@@ -5,6 +5,8 @@ from PySide6.QtWidgets import (
 )
 from app_state import API_BASE, GlobalState
 
+from styles import estilos_formularios
+
 EMAIL_RE = re.compile(r"^[^@]+@[^@]+\.[^@]+$")
 
 
@@ -16,8 +18,9 @@ class UsuarioDialog(QDialog):
         self.usuario = usuario or {}
         self.payload = None
         self.setWindowTitle("Crear Usuario" if modo == "add" else "Editar Usuario")
-        self.resize(480, 220)
+        self.resize(500, 300)
         self._setup_ui()
+        self.setStyleSheet(estilos_formularios)
 
     def _setup_ui(self):
         layout = QFormLayout(self)
@@ -88,17 +91,17 @@ class UsuarioDialog(QDialog):
         if not self._validate_fields():
             return
 
-        email = self.txt_email.text().strip()
+        email = self.txt_email.text().strip().lower()
 
         confirm, ok = QInputDialog.getText(self, "Confirmar correo",
                                            "Reingrese el correo para confirmar:")
-        if not ok or confirm.strip().lower() != email.lower():
+        if not ok or confirm.strip().lower() != email:
             QMessageBox.warning(self, "Confirmación requerida", "El correo no coincide. Verifique e intente nuevamente")
             return
 
         self.payload = {
-            "id": self.txt_id.text().strip() or None,
-            "nombre": self.txt_nombre.text().strip(),
+            "id": self.txt_id.text().strip().upper() or None,
+            "nombre": self.txt_nombre.text().strip().upper(),
             "email": email,
             "password": self.txt_password.text(),
             "rol": "usuario"
@@ -111,7 +114,14 @@ class UsuarioDialog(QDialog):
         if not valor:
             QMessageBox.warning(self, "Campo vacío", "Ingrese el nuevo valor.")
             return
-        self.payload = {"campo": self.combo_campo.currentData(), "valor": valor}
+        
+        campo = self.combo_campo.currentData()
+        if campo == "nombre":
+            valor = valor.upper()
+        elif campo == "email":
+            valor = valor.lower()
+
+        self.payload = {"campo": campo, "valor": valor}
         self.accept()
 
     def get_payload(self):

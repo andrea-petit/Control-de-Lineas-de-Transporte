@@ -6,12 +6,14 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt
 from app_state import API_BASE, GlobalState
 
+from styles import estilos_formularios
+
 class ChoferDialog(QDialog):
     def __init__(self, parent=None, chofer=None):
         super().__init__(parent)
         self.chofer = chofer
         self.setWindowTitle("Editar Chofer" if chofer else "Nuevo Chofer")
-        self.resize(420, 260)
+        self.resize(450, 300)
         self.setup_ui()
         self.cargar_vehiculos()
         if self.chofer:
@@ -19,6 +21,9 @@ class ChoferDialog(QDialog):
 
     def setup_ui(self):
         layout = QVBoxLayout(self)
+        layout.setSpacing(15)
+        layout.setContentsMargins(20, 20, 20, 20)
+
         layout.addWidget(QLabel("Nombre:"))
         self.input_nombre = QLineEdit()
         layout.addWidget(self.input_nombre)
@@ -34,51 +39,28 @@ class ChoferDialog(QDialog):
         layout.addWidget(QLabel("Descripción (registro de cambio, opcional):"))
         self.input_descripcion = QLineEdit()
         layout.addWidget(self.input_descripcion)
+        
+        layout.addStretch()
 
         btns = QHBoxLayout()
+        btns.setSpacing(10)
+        
         self.btn_guardar = QPushButton("Guardar")
+        self.btn_guardar.setCursor(Qt.PointingHandCursor)
+        
         self.btn_cancelar = QPushButton("Cancelar")
+        self.btn_cancelar.setObjectName("cancelar")
+        self.btn_cancelar.setCursor(Qt.PointingHandCursor)
+        
         self.btn_guardar.clicked.connect(self.guardar)
         self.btn_cancelar.clicked.connect(self.reject)
+        
+        btns.addStretch()
         btns.addWidget(self.btn_guardar)
         btns.addWidget(self.btn_cancelar)
         layout.addLayout(btns)
 
-        self.setStyleSheet("""
-            QDialog {
-                background-color: #f7faff;
-            }
-            QLabel {
-                font-weight: bold;
-                color: #2a4d69;
-                margin-bottom: 3px;
-            }
-            QLineEdit, QComboBox, QSpinBox {
-                border: 1px solid #a3c2ff;
-                border-radius: 6px;
-                padding: 6px;
-                background-color: #ffffff;
-            }
-            QLineEdit:focus, QComboBox:focus, QSpinBox:focus {
-                border: 1px solid #4a90e2;
-                background-color: #f0f6ff;
-            }
-            QPushButton {
-                background-color: #4a90e2;
-                color: white;
-                border-radius: 6px;
-                padding: 6px 14px;
-            }
-            QPushButton:hover {
-                background-color: #357ab7;
-            }
-            QPushButton#cancelar {
-                background-color: #e74c3c;
-            }
-            QPushButton#cancelar:hover {
-                background-color: #c0392b;
-            }
-        """)
+        self.setStyleSheet(estilos_formularios)
 
     def cargar_vehiculos(self):
         headers = {"Authorization": f"Bearer {GlobalState.token}"} if GlobalState.token else {}
@@ -110,8 +92,14 @@ class ChoferDialog(QDialog):
         if not token:
             QMessageBox.warning(self, "No autorizado", "Debe iniciar sesión.")
             return
+        
         headers = {"Authorization": f"Bearer {token}"}
-        descripcion = self.input_descripcion.text().strip()
+        
+        # Capitalizar inputs
+        nombre = self.input_nombre.text().strip().upper()
+        cedula = self.input_cedula.text().strip().upper()
+        descripcion = self.input_descripcion.text().strip().upper()
+        id_vehiculo = self.combo_vehiculo.currentData()
 
         if self.chofer:
             cid = self.chofer.get("id_chofer", self.chofer.get("id"))
@@ -120,9 +108,14 @@ class ChoferDialog(QDialog):
                 old = self.chofer.get(key)
                 if (old is None and new) or (str(old) != str(new)):
                     updates.append((key, new))
-            add_if_changed("nombre", self.input_nombre.text().strip())
-            add_if_changed("cedula", self.input_cedula.text().strip())
-            add_if_changed("id_vehiculo", self.combo_vehiculo.currentData())
+            
+            add_if_changed("nombre", nombre)
+            add_if_changed("cedula", cedula)
+            # id_vehiculo a veces puede ser None
+            old_veh = self.chofer.get("id_vehiculo")
+            if str(old_veh) != str(id_vehiculo): 
+                 if not (old_veh is None and id_vehiculo is None):
+                    updates.append(("id_vehiculo", id_vehiculo))
 
             if not updates:
                 QMessageBox.information(self, "Sin cambios", "No hay cambios para guardar.")
@@ -143,9 +136,9 @@ class ChoferDialog(QDialog):
                 QMessageBox.critical(self, "Error", f"No se pudo conectar: {e}")
         else:
             payload = {
-                "nombre": self.input_nombre.text().strip(),
-                "cedula": self.input_cedula.text().strip(),
-                "id_vehiculo": self.combo_vehiculo.currentData(),
+                "nombre": nombre,
+                "cedula": cedula,
+                "id_vehiculo": id_vehiculo,
                 "descripcion": descripcion or None
             }
             if not payload["nombre"] or not payload["cedula"]:

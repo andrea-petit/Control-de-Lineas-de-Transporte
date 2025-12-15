@@ -2,11 +2,12 @@ import requests
 from datetime import datetime
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QLabel, QTableWidget, QTableWidgetItem,
-    QHBoxLayout, QPushButton, QMessageBox, QLineEdit
+    QHBoxLayout, QPushButton, QMessageBox, QLineEdit, QHeaderView
 )
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor, QPalette
 from app_state import API_BASE, GlobalState
+from styles import estilos_paginas
 
 
 class CambiosWindow(QWidget):
@@ -16,6 +17,7 @@ class CambiosWindow(QWidget):
         self.resize(1000, 520)
         self.setup_ui()
         self.cargar_cambios()
+        self.setStyleSheet(estilos_paginas)
 
     def setup_ui(self):
         layout = QVBoxLayout(self)
@@ -23,7 +25,7 @@ class CambiosWindow(QWidget):
         header = QHBoxLayout()
         self.label_titulo = QLabel("Historial de Cambios")
         self.label_titulo.setAlignment(Qt.AlignCenter)
-        self.label_titulo.setStyleSheet("font-weight:bold; font-size:16px; margin:8px; color:#2a3d66;")
+        self.label_titulo.setObjectName("titulo")
         header.addWidget(self.label_titulo)
         layout.addLayout(header)
 
@@ -37,66 +39,23 @@ class CambiosWindow(QWidget):
 
 
 
-        self.tabla.setStyleSheet("""
-            QTableWidget {
-                background-color: #ffffff;
-                alternate-background-color: #f2f6ff;
-                border: 1px solid #d0d7e2;
-                gridline-color: #d0d7e2;
-                font-size: 13px;
-            }
-            QHeaderView::section {
-                background-color: #e3e9f5;
-                padding: 6px;
-                border: 1px solid #c7cdd8;
-                font-weight: bold;
-            }
-            QTableWidget::item {
-                padding: 4px;
-            }
-        """)
+        # Inline style removed, using global style
 
 
         anchos = [130, 160, 90, 110, 140, 130, 300]
         for idx, w in enumerate(anchos):
             self.tabla.setColumnWidth(idx, w)
         self.tabla.horizontalHeader().setStretchLastSection(True)
+        self.tabla.horizontalHeader().setSectionResizeMode(QHeaderView.Fixed)
 
         layout.addWidget(self.tabla)
 
         btns = QHBoxLayout()
         self.input_filtro = QLineEdit()
         self.input_filtro.setPlaceholderText("Filtrar por tabla (ej: vehiculos)")
-        self.input_filtro.setStyleSheet("""
-            QLineEdit {
-                border: 1px solid #b0b8c6;
-                border-radius: 6px;
-                padding: 5px 8px;
-                font-size: 13px;
-            }
-            QLineEdit:focus {
-                border: 1px solid #5b8def;
-                outline: none;
-            }
-        """)
 
         self.btn_filtrar = QPushButton("Filtrar")
         self.btn_filtrar.setCursor(Qt.PointingHandCursor)
-        self.btn_filtrar.setStyleSheet("""
-            QPushButton {
-                background-color: #5b8def;
-                color: white;
-                font-weight: bold;
-                padding: 6px 12px;
-                border-radius: 6px;
-            }
-            QPushButton:hover {
-                background-color: #4a7ad1;
-            }
-            QPushButton:pressed {
-                background-color: #3b66af;
-            }
-        """)
         self.btn_filtrar.clicked.connect(self.cargar_cambios)
 
         btns.addWidget(self.input_filtro)
@@ -104,10 +63,7 @@ class CambiosWindow(QWidget):
         btns.addStretch()
         layout.addLayout(btns)
 
-        pal = self.palette()
-        pal.setColor(QPalette.Window, QColor("#f4f7ff"))
-        self.setAutoFillBackground(True)
-        self.setPalette(pal)
+        # Removed manual palette setting
 
  
     def cargar_cambios(self):

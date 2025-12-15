@@ -5,6 +5,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt
 from app_state import API_BASE, GlobalState
+from styles import estilos_formularios
 
 
 class VehiculoDialog(QDialog):
@@ -13,14 +14,17 @@ class VehiculoDialog(QDialog):
         self.vehiculo = vehiculo
         self.modo_edicion = vehiculo is not None
         self.setWindowTitle("Editar Vehículo" if self.modo_edicion else "Nuevo Vehículo")
-        self.resize(480, 450)
+        self.resize(500, 500)
         self.setup_ui()
+        self.setStyleSheet(estilos_formularios)
 
         if self.modo_edicion:
             self.cargar_datos()
 
     def setup_ui(self):
         layout = QVBoxLayout(self)
+        layout.setSpacing(12)
+        layout.setContentsMargins(20, 20, 20, 20)
 
         self.widgets_campos = {
             "Placa": QLineEdit(),
@@ -98,36 +102,7 @@ class VehiculoDialog(QDialog):
         btns.addWidget(self.btn_cancelar)
         layout.addLayout(btns)
 
-        self.setStyleSheet("""
-            QDialog {
-                background-color: #f7faff;
-            }
-            QLabel {
-                font-weight: bold;
-                color: #2a4d69;
-            }
-            QLineEdit, QComboBox, QSpinBox {
-                border: 1px solid #a3c2ff;
-                border-radius: 6px;
-                padding: 4px 6px;
-                min-width: 120px;
-            }
-            QPushButton {
-                background-color: #4a90e2;
-                color: white;
-                border-radius: 6px;
-                padding: 6px 12px;
-            }
-            QPushButton:hover {
-                background-color: #357ab7;
-            }
-            QPushButton#cancelar {
-                background-color: #e74c3c;
-            }
-            QPushButton#cancelar:hover {
-                background-color: #c0392b;
-            }
-        """)
+        # self.setStyleSheet(...) Removed inline style
 
         self.btn_guardar.setCursor(Qt.PointingHandCursor)
         self.btn_cancelar.setCursor(Qt.PointingHandCursor)
@@ -209,7 +184,7 @@ class VehiculoDialog(QDialog):
         widget = self.widgets_campos[campo]
 
         if isinstance(widget, QLineEdit):
-            valor = widget.text().strip()
+            valor = widget.text().strip().upper()
         elif isinstance(widget, QSpinBox):
             valor = widget.value()
         elif isinstance(widget, QComboBox):
@@ -221,7 +196,7 @@ class VehiculoDialog(QDialog):
             QMessageBox.warning(self, "Dato requerido", f"Ingrese un valor para {campo}.")
             return
 
-        motivo = self.input_motivo.text().strip()
+        motivo = self.input_motivo.text().strip().upper()
         if not motivo:
             QMessageBox.warning(self, "Dato requerido", "Debe ingresar la razón del cambio.")
             return
@@ -289,7 +264,7 @@ class VehiculoDialog(QDialog):
         payload = {}
         for campo, widget in self.widgets_campos.items():
             if isinstance(widget, QLineEdit):
-                valor = widget.text().strip()
+                valor = widget.text().strip().upper()
             elif isinstance(widget, QSpinBox):
                 valor = widget.value()
             elif isinstance(widget, QComboBox):

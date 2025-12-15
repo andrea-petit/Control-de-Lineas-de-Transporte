@@ -11,6 +11,7 @@ from windows.usuarios_window import UsuariosWindow
 from app_state import API_BASE, GlobalState
 from windows.archivos_window import ReportGUI
 from styles import *
+from dialogs.alert_dialog import AlertDialog
 
 
 class MenuWindow(QMainWindow):
@@ -35,6 +36,7 @@ class MenuWindow(QMainWindow):
 
         # botón pequeño en el header para volver a abrir/ocultar el panel
         self.menu_toggle_btn = QPushButton("☰")
+        self.menu_toggle_btn.setStyleSheet("background-color: transparent; border: none;")
         self.menu_toggle_btn.setFixedSize(36, 36)
         self.menu_toggle_btn.setCursor(Qt.PointingHandCursor)
         self.menu_toggle_btn.setToolTip("Mostrar/ocultar menú")
@@ -70,15 +72,14 @@ class MenuWindow(QMainWindow):
 
 
     def setup_buttons_frames(self):
-        self.button1 = QPushButton("Lineas")
-        self.button2 = QPushButton("Vehiculos")
+        self.button1 = QPushButton("Líneas")
+        self.button2 = QPushButton("Vehículos")
         self.button3 = QPushButton("Choferes")
         self.button4 = QPushButton("Historial de Cambios")
         self.button5 = QPushButton("Generar Archivo")
         self.button6 = QPushButton("Administrar Usuarios")
         self.btn_logout = QPushButton("Cerrar sesión")
         
-        # asignar rutas de icono y guardar icono en propiedad, pero NO mostrarlo aún
         icons = {
             self.button1: "frontend/icons/lineas3.png",
             self.button2: "frontend/icons/vehiculos2.png",
@@ -169,6 +170,26 @@ class MenuWindow(QMainWindow):
         
         header_layout.addWidget(title_container, Qt.AlignVCenter)
         header_layout.addStretch(0)
+
+        # Botón Acerca de en el header (derecha)
+        self.btn_about = QPushButton("Acerca de")
+        self.btn_about.setCursor(Qt.PointingHandCursor)
+        self.btn_about.setIcon(QIcon("frontend/icons/info.png"))
+        self.btn_about.setStyleSheet("""
+            QPushButton {
+                background-color: transparent;
+                color: #333;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+                padding: 5px 10px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #eee;
+            }
+        """)
+        self.btn_about.clicked.connect(self.mostrar_acerca_de)
+        header_layout.addWidget(self.btn_about, 0, Qt.AlignVCenter)
 
 
     def toggle_buttons_panel(self, collapsed=None):
@@ -300,6 +321,99 @@ class MenuWindow(QMainWindow):
         layout.addWidget(self.archivos_window)
         self.toggle_buttons_panel(collapsed=True)
 
+    def mostrar_acerca_de(self):
+        if self.frame_window.layout() is None:
+            self.frame_window.setLayout(QVBoxLayout())
+        layout = self.frame_window.layout()
+        while layout.count():
+            item = layout.takeAt(0)
+            w = item.widget()
+            if w:
+                w.setParent(None)
+        
+        # Area de desplazamiento para asegurar que todo sea visible
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setStyleSheet("background: transparent; border: none;")
+        
+        center_widget = QWidget()
+        center_widget.setStyleSheet("background: transparent;")
+        center_layout = QVBoxLayout(center_widget)
+        center_layout.setAlignment(Qt.AlignCenter)
+        center_layout.setContentsMargins(10, 10, 10, 10)
+
+        container = QWidget()
+        container.setMaximumWidth(700)  # Más ancho para mejor distribución
+        container.setMinimumWidth(500)
+        container.setStyleSheet("""
+            QWidget {
+                background-color: #ffffff; 
+                border-radius: 15px; 
+            }
+            QLabel {
+                background-color: transparent;
+            }
+        """)
+        
+        v_layout = QVBoxLayout(container)
+        v_layout.setAlignment(Qt.AlignCenter)
+        v_layout.setContentsMargins(40, 40, 40, 40)
+        v_layout.setSpacing(15)
+
+        lbl_titulo = QLabel("Sistema de Control de Líneas de Transporte")
+        lbl_titulo.setStyleSheet("font-size: 28px; font-weight: bold; color: #012d51; margin-bottom: 15px;")
+        lbl_titulo.setAlignment(Qt.AlignCenter)
+
+        lbl_desc = QLabel(
+            "Este sistema permite la gestión integral de líneas de transporte, vehículos, choferes y reportes. \nDesarrollado para optimizar el control y seguimiento de las operaciones."
+        )
+        lbl_desc.setWordWrap(True)
+        lbl_desc.setStyleSheet("font-size: 16px; color: #444; line-height: 100%;")
+        lbl_desc.setAlignment(Qt.AlignCenter)
+
+        # Sección de créditos
+        lbl_unefa = QLabel("Realizado por los estudiantes de la UNEFA:")
+        lbl_unefa.setStyleSheet("font-size: 18px; font-weight: bold; color: #012d51; margin-top: 40px;")
+        lbl_unefa.setAlignment(Qt.AlignCenter)
+
+        # Usar un Grid para los nombres para ahorrar espacio vertical y que se vean todos bien
+        names_widget = QWidget()
+        names_layout = QGridLayout(names_widget)
+        
+        estudiantes = [
+            "Andrea Petit", "Andres Arias",
+            "Veronika Arias", "Elijah Reyes",
+            "Jeanniret Robles"
+        ]
+        
+        row, col = 0, 0
+        for name in estudiantes:
+            l = QLabel(name)
+            l.setStyleSheet("font-size: 16px; color: #333; font-weight: 500;")
+            l.setAlignment(Qt.AlignCenter)
+            names_layout.addWidget(l, row, col)
+            col += 1
+            if col > 1:
+                col = 0
+                row += 1
+
+        lbl_credits = QLabel("© 2025 Instituto Municipal de Tránsito y Transporte")
+        lbl_credits.setStyleSheet("font-size: 13px; color: #888; margin-top: 30px;")
+        lbl_credits.setAlignment(Qt.AlignCenter)
+
+        v_layout.addWidget(lbl_titulo)
+        v_layout.addWidget(lbl_desc)
+        v_layout.addWidget(lbl_unefa)
+        v_layout.addWidget(names_widget)
+        v_layout.addWidget(lbl_credits)
+
+        center_layout.addWidget(container)
+        
+        scroll.setWidget(center_widget)
+        layout.addWidget(scroll)
+        
+        self.toggle_buttons_panel(collapsed=True)
+
     def logout(self):
         """
         Limpia el estado global, abre la ventana de login y cierra el menú.
@@ -321,7 +435,7 @@ class MenuWindow(QMainWindow):
                 self.login.setup_ui()
             self.login.show()
         except Exception as e:
-            QMessageBox.critical(self, "Error", f"No se pudo abrir Login: {e}")
+            AlertDialog.critical(self, "Error", f"No se pudo abrir Login: {e}")
         # cerrar ventana de menú
         self.close()
 

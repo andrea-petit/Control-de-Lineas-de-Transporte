@@ -11,6 +11,8 @@ from PySide6.QtWidgets import (
     QMessageBox, QFileDialog, QGroupBox
 )
 from PySide6.QtCore import QObject, Signal, Qt, QThread
+from PySide6.QtGui import QIcon # Added missing import for QIcon
+from styles import estilos_archivos
 
 API_BASE_URL = API_BASE
 UPLOAD_FOLDER = "uploads"
@@ -65,31 +67,42 @@ class ReportWorker(QObject):
 class ReportGUI(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Generador de reportes - PySide6")
-        self.resize(900, 600)
+        self.setWindowTitle("Generador de reportes - Control de Lineas")
+        self.resize(950, 650)
         self._active_threads = []
         self._build_ui()
         self.list_files()
+        
+        # Aplicar estilos
+        self.setStyleSheet(estilos_archivos)
 
     def _build_ui(self):
         central = QWidget()
+        central.setObjectName("central_widget")
         self.setCentralWidget(central)
         layout = QVBoxLayout(central)
+        layout.setContentsMargins(20, 20, 20, 20)
+        layout.setSpacing(15)
 
         # Filtros
-        gb_filters = QGroupBox("Filtros")
+        gb_filters = QGroupBox("Opciones de Reporte")
         fl = QHBoxLayout()
+        fl.setSpacing(15)
+        fl.setContentsMargins(15, 25, 15, 15)
         gb_filters.setLayout(fl)
         layout.addWidget(gb_filters)
 
         # Municipio
         self.cmb_municipios = QComboBox()
+        self.cmb_municipios.setStyleSheet("background-color: #ffffff; color: black; border: 1px solid #cfd8dc; border-radius: 5px; padding: 6px 10px;")
         self.cmb_municipios.addItems(list(MUNICIPIOS_MAP.keys()))
         self.cmb_grupo = QComboBox()
+        self.cmb_grupo.setStyleSheet("background-color: #ffffff; color: black; border: 1px solid #cfd8dc; border-radius: 5px; padding: 6px 10px;")
         self.cmb_grupo.addItems(["Todos", "A", "B", "C"])
 
         # Combustible
         self.cmb_comb = QComboBox()
+        self.cmb_comb.setStyleSheet("background-color: #ffffff; color: black; border: 1px solid #cfd8dc; border-radius: 5px; padding: 6px 10px;")
         self.cmb_comb.addItems(["", "Diésel", "Gasolina"])
 
         fl.addWidget(QLabel("Municipio:"))
@@ -101,15 +114,20 @@ class ReportGUI(QMainWindow):
 
         # Botones PDF / Excel
         hb = QHBoxLayout()
+        hb.setSpacing(10)
         layout.addLayout(hb)
 
         self.btn_pdf = QPushButton("Generar PDF")
+        self.btn_pdf.setCursor(Qt.PointingHandCursor)
         self.btn_pdf.clicked.connect(self.on_generate_pdf)
 
         self.btn_xlsx = QPushButton("Generar Excel")
+        self.btn_xlsx.setCursor(Qt.PointingHandCursor)
         self.btn_xlsx.clicked.connect(self.on_generate_xlsx)
 
-        btn_refresh = QPushButton("Refrescar archivos")
+        btn_refresh = QPushButton("Refrescar lista")
+        btn_refresh.setObjectName("btn_refresh")
+        btn_refresh.setCursor(Qt.PointingHandCursor)
         btn_refresh.clicked.connect(self.list_files)
 
         hb.addWidget(self.btn_pdf)
@@ -118,31 +136,40 @@ class ReportGUI(QMainWindow):
         hb.addWidget(btn_refresh)
 
         # Lista de archivos
-        layout.addWidget(QLabel("Archivos"))
+        lbl_list = QLabel("Archivos Generados:")
+        lbl_list.setStyleSheet("font-weight: bold; font-size: 15px; margin-top: 10px;")
+        layout.addWidget(lbl_list)
+        
         self.lst_files = QListWidget()
         layout.addWidget(self.lst_files)
 
-        fh_buttons = QHBoxLayout()
-        btn_open = QPushButton("Abrir")
+        # Botones de acción y cerrar en la misma línea
+        bottom = QHBoxLayout()
+        bottom.setSpacing(10)
+        
+        btn_open = QPushButton("Abrir Archivo")
+        btn_open.setCursor(Qt.PointingHandCursor)
         btn_open.clicked.connect(self.open_selected_file)
-        btn_del = QPushButton("Eliminar")
+        
+        btn_del = QPushButton("Eliminar Seleccionado")
+        btn_del.setObjectName("btn_delete")
+        btn_del.setCursor(Qt.PointingHandCursor)
         btn_del.clicked.connect(self.delete_selected_file)
 
-        fh_buttons.addWidget(btn_open)
-        fh_buttons.addWidget(btn_del)
-        layout.addLayout(fh_buttons)
-
-        # Estado + salir
-        bottom = QHBoxLayout()
-        layout.addLayout(bottom)
-
         self.lbl_status = QLabel("")
+        self.lbl_status.setObjectName("lbl_status")
+
+        btn_close = QPushButton("Cerrar Ventana")
+        btn_close.setCursor(Qt.PointingHandCursor)
+        btn_close.clicked.connect(self.close)
+
+        bottom.addWidget(btn_open)
+        bottom.addWidget(btn_del)
         bottom.addWidget(self.lbl_status)
         bottom.addStretch()
-
-        btn_close = QPushButton("Salir")
-        btn_close.clicked.connect(self.close)
         bottom.addWidget(btn_close)
+
+        layout.addLayout(bottom)
 
     def collect_filters(self):
         # Municipio

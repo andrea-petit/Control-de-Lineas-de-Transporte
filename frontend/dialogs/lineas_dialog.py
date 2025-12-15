@@ -7,12 +7,14 @@ from PySide6.QtCore import Qt
 from app_state import API_BASE, GlobalState
 
 
+from styles import estilos_formularios
+
 class LineaDialog(QDialog):
     def __init__(self, parent=None, linea=None):
         super().__init__(parent)
         self.linea = linea 
         self.setWindowTitle("Editar Línea" if linea else "Nueva Línea")
-        self.resize(400, 300)
+        self.resize(450, 350)
         self.setup_ui()
         self.cargar_municipios()
 
@@ -21,6 +23,8 @@ class LineaDialog(QDialog):
 
     def setup_ui(self):
         layout = QVBoxLayout(self)
+        layout.setSpacing(15)
+        layout.setContentsMargins(20, 20, 20, 20)
 
         layout.addWidget(QLabel("Nombre de la organización:"))
         self.input_nombre = QLineEdit()
@@ -35,9 +39,19 @@ class LineaDialog(QDialog):
         self.input_descripcion.setPlaceholderText("Breve descripción del cambio (opcional)")
         layout.addWidget(self.input_descripcion)
 
+        layout.addStretch()
+
         btn_layout = QHBoxLayout()
+        btn_layout.setSpacing(10)
+        
         self.btn_guardar = QPushButton("Guardar")
+        self.btn_guardar.setCursor(Qt.PointingHandCursor)
+        
         self.btn_cancelar = QPushButton("Cancelar")
+        self.btn_cancelar.setObjectName("cancelar")
+        self.btn_cancelar.setCursor(Qt.PointingHandCursor)
+        
+        btn_layout.addStretch()
         btn_layout.addWidget(self.btn_guardar)
         btn_layout.addWidget(self.btn_cancelar)
         layout.addLayout(btn_layout)
@@ -45,41 +59,7 @@ class LineaDialog(QDialog):
         self.btn_guardar.clicked.connect(self.guardar)
         self.btn_cancelar.clicked.connect(self.reject)
 
-        self.setStyleSheet("""
-            QDialog {
-                background-color: #f7faff;
-            }
-            QLabel {
-                font-weight: bold;
-                color: #2a4d69;
-                margin-bottom: 3px;
-            }
-            QLineEdit, QComboBox, QSpinBox {
-                border: 1px solid #a3c2ff;
-                border-radius: 6px;
-                padding: 6px;
-                background-color: #ffffff;
-            }
-            QLineEdit:focus, QComboBox:focus, QSpinBox:focus {
-                border: 1px solid #4a90e2;
-                background-color: #f0f6ff;
-            }
-            QPushButton {
-                background-color: #4a90e2;
-                color: white;
-                border-radius: 6px;
-                padding: 6px 14px;
-            }
-            QPushButton:hover {
-                background-color: #357ab7;
-            }
-            QPushButton#cancelar {
-                background-color: #e74c3c;
-            }
-            QPushButton#cancelar:hover {
-                background-color: #c0392b;
-            }
-        """)
+        self.setStyleSheet(estilos_formularios)
 
     def cargar_municipios(self):
         """Carga la lista de municipios en el combo."""
@@ -105,9 +85,9 @@ class LineaDialog(QDialog):
             self.combo_municipio.setCurrentIndex(idx)
 
     def guardar(self):
-        nombre_organizacion = self.input_nombre.text().strip()
+        nombre_organizacion = self.input_nombre.text().strip().upper()
         id_municipio = self.combo_municipio.currentData()
-        descripcion = self.input_descripcion.text().strip()
+        descripcion = self.input_descripcion.text().strip().upper()
 
         if not (nombre_organizacion and id_municipio):
             QMessageBox.warning(self, "Campos vacíos", "Completa todos los campos antes de guardar.")

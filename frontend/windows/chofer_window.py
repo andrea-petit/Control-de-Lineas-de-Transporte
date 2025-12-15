@@ -1,12 +1,13 @@
 import requests
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
-    QComboBox, QTableWidget, QTableWidgetItem, QMessageBox, QInputDialog, QWidgetItem, QLineEdit
+    QComboBox, QTableWidget, QTableWidgetItem, QMessageBox, QInputDialog, QWidgetItem, QLineEdit, QHeaderView
 )
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor, QPalette
 from app_state import API_BASE, GlobalState
 from dialogs.chofer_dialog import ChoferDialog
+from styles import estilos_paginas
 
 class ChoferesWindow(QWidget):
     def __init__(self):
@@ -14,6 +15,7 @@ class ChoferesWindow(QWidget):
         self.setWindowTitle("Choferes")
         self.resize(980, 580)
         self.setup_ui()
+        self.setStyleSheet(estilos_paginas)
         # cargar todos los choferes al iniciar
         self.cargar_todos_choferes()
 
@@ -43,7 +45,7 @@ class ChoferesWindow(QWidget):
 
         self.label_titulo = QLabel("Choferes")
         self.label_titulo.setAlignment(Qt.AlignCenter)
-        self.label_titulo.setStyleSheet("font-weight:bold; font-size:16px; margin:8px;")
+        self.label_titulo.setObjectName("titulo")
         layout.addWidget(self.label_titulo)
 
         self.tabla = QTableWidget()
@@ -57,35 +59,22 @@ class ChoferesWindow(QWidget):
         self.tabla.setColumnWidth(3,240)
         self.tabla.setColumnWidth(4,800)
         self.tabla.setColumnHidden(0, True)
+        self.tabla.horizontalHeader().setSectionResizeMode(QHeaderView.Fixed)
 
-        self.tabla.setStyleSheet("""
-            QTableWidget {
-                background-color: #ffffff;
-                alternate-background-color: #f2f6ff;
-                border: 1px solid #d0d7e2;
-                gridline-color: #d0d7e2;
-                font-size: 13px;
-            }
-            QHeaderView::section {
-                background-color: #e3e9f5;
-                padding: 6px;
-                border: 1px solid #c7cdd8;
-                font-weight: bold;
-            }
-        """)
+        # Inline style removed, using global style
 
         layout.addWidget(self.tabla)
 
         btns = QHBoxLayout()
         self.btn_agregar = QPushButton("Agregar Chofer")
+        self.btn_agregar.setFixedWidth(200)
+        self.btn_agregar.setCursor(Qt.PointingHandCursor)
         self.btn_agregar.clicked.connect(self.agregar_chofer)
         btns.addWidget(self.btn_agregar)
+        btns.addStretch()
         layout.addLayout(btns)
 
-        pal = self.palette()
-        pal.setColor(QPalette.Window, QColor("#f4f7ff"))
-        self.setAutoFillBackground(True)
-        self.setPalette(pal)
+        # Removed manual palette setting
 
     def cargar_todos_choferes(self):
         url = f"{API_BASE}/api/choferes"
@@ -119,6 +108,7 @@ class ChoferesWindow(QWidget):
             for btn in (btn_editar, btn_eliminar):
                 btn.setFixedSize(70,28)
                 btn.setCursor(Qt.PointingHandCursor)
+            btn_eliminar.setObjectName("btn_eliminar")
             btn_editar.clicked.connect(lambda _, _id=cid: self.editar_chofer(_id))
             btn_eliminar.clicked.connect(lambda _, _id=cid: self.eliminar_chofer(_id))
 

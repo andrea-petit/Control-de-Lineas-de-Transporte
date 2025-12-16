@@ -26,8 +26,10 @@ class LineasWindow(QWidget):
         top_layout = QHBoxLayout()
 
         lbl_muni = QLabel("Seleccionar Municipio:")
-        
+        lbl_muni.setStyleSheet(estilos_paginas + "QLabel { font-weight: bold; }")
+
         self.combo_municipios = QComboBox()
+        self.combo_municipios.setStyleSheet(estilos_paginas + "QComboBox { color: black; } QComboBox QAbstractItemView { color: black; }")
         self.combo_municipios.setMinimumWidth(300)
         self.combo_municipios.currentIndexChanged.connect(self.cargar_lineas)
 
@@ -114,7 +116,6 @@ class LineasWindow(QWidget):
         for row, l in enumerate(lineas):
             self.tabla.insertRow(row)
             self.tabla.setItem(row, 0, QTableWidgetItem(l['nombre_organizacion']))
-
             btn_editar = QPushButton("Editar")
             btn_eliminar = QPushButton("Eliminar")
 

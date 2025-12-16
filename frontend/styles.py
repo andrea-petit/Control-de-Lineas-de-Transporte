@@ -94,7 +94,7 @@ qcombostyle = '''
         background-color: #00457a;
         font-size: 14px;
         font-weight: 600;
-        color: #ffffff;
+        color: white;
         padding: 10px;
         border: 2px solid #003a5b;
         border-radius: 8px;
@@ -109,6 +109,7 @@ qcombostyle = '''
     QComboBox::drop-down {
         subcontrol-origin: padding;
         subcontrol-position: top right;
+        color: white;
         width: 30px;
         border-left: none;
         background: transparent;
@@ -122,7 +123,7 @@ qcombostyle = '''
 
     QComboBox QAbstractItemView {
         background: #023a66;
-        color: #ffffff;
+        color: white;
         selection-background-color: #015a8a;
         selection-color: #ffffff;
         padding: 4px;
@@ -337,7 +338,7 @@ estilos_formularios = """
         border-radius: 6px;
         padding: 8px;
         background-color: #ffffff;
-        color: #333;
+        color: black;
         font-size: 13px;
     }
     
@@ -349,9 +350,16 @@ estilos_formularios = """
     QComboBox::drop-down {
         subcontrol-origin: padding;
         subcontrol-position: top right;
-        width: 30px; 
-        border: none;
+        color: black;
+        width: 30px;
+        border-left: none;
         background: transparent;
+    }
+
+    QComboBox::down-arrow {
+        image: url(''' + resources_path('frontend/img/flecha5.png').replace(os.sep, '/') + ''');
+        width: 15px;
+        height: 15px;
     }
     
     QPushButton {

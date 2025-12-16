@@ -72,6 +72,21 @@ class VehiculosWindow(QWidget):
         self.tabla.setColumnCount(len(columnas))
         self.tabla.setHorizontalHeaderLabels(columnas)
         self.tabla.setColumnHidden(0, True)
+        self.tabla.setColumnWidth(0, 50)
+        self.tabla.setColumnWidth(1, 100)
+        self.tabla.setColumnWidth(2, 100)
+        self.tabla.setColumnWidth(3, 100)
+        self.tabla.setColumnWidth(4, 100)
+        self.tabla.setColumnWidth(5, 100)
+        self.tabla.setColumnWidth(6, 80)
+        self.tabla.setColumnWidth(7, 100)
+        self.tabla.setColumnWidth(8, 100)
+        self.tabla.setColumnWidth(9, 100)
+        self.tabla.setColumnWidth(10, 60)
+        self.tabla.setColumnWidth(11, 100)
+        self.tabla.setColumnWidth(12, 200)
+        self.tabla.setColumnWidth(13, 100)
+        self.tabla.setColumnWidth(14, 200)
         self.tabla.horizontalHeader().setSectionResizeMode(QHeaderView.Fixed)
 
         # Inline style removed, using global style
@@ -171,8 +186,7 @@ class VehiculosWindow(QWidget):
             self.tabla.insertRow(row)
             for col, val in enumerate(datos):
                 item = QTableWidgetItem(val)
-                if col in (0, 6, 7):
-                    item.setTextAlignment(Qt.AlignCenter)
+                item.setTextAlignment(Qt.AlignCenter)
                 self.tabla.setItem(row, col, item)
 
             btn_editar = QPushButton("Editar")

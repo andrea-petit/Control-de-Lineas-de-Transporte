@@ -1,13 +1,13 @@
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
-    QTextEdit, QListWidget, QListWidgetItem, QSpinBox, QMessageBox
+    QTextEdit, QListWidget, QListWidgetItem, QSpinBox, QMessageBox, QLineEdit
 )
 
 from PySide6.QtGui import QIcon
 
 from PySide6.QtCore import Qt
 import requests
-from app_state import API_BASE, GlobalState, resources_path
+from app_state import API_BASE, GlobalState, resources_path, set_server_ip
 
 
 class MantenimientoWindow(QWidget):
@@ -34,6 +34,16 @@ class MantenimientoWindow(QWidget):
         header.addWidget(btn_refresh)
 
         layout.addLayout(header)
+
+        ip_layout = QHBoxLayout()
+        ip_layout.addWidget(QLabel("IP del Servidor:"))
+        self.ip_input = QLineEdit()
+        self.ip_input.setText(GlobalState.server_ip)
+        ip_layout.addWidget(self.ip_input)
+        btn_set_ip = QPushButton("Cambiar IP")
+        btn_set_ip.clicked.connect(self.cambiar_ip)
+        ip_layout.addWidget(btn_set_ip)
+        layout.addLayout(ip_layout)
 
         self.resumen = QTextEdit()
         self.resumen.setReadOnly(True)
@@ -130,6 +140,18 @@ class MantenimientoWindow(QWidget):
                 QMessageBox.warning(self, "Error", "No se pudieron eliminar los logs.")
         except requests.RequestException as e:
             QMessageBox.critical(self, "Error", f"No se pudo conectar:\n{e}")
+
+    def cambiar_ip(self):
+        new_ip = self.ip_input.text().strip()
+        if not new_ip:
+            QMessageBox.warning(self, "Error", "Ingrese una IP válida.")
+            return
+        try:
+            set_server_ip(new_ip)
+            QMessageBox.information(self, "Éxito", "IP del servidor cambiada.")
+            self.cargar_resumen()
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Error al cambiar IP: {e}")
 
     def probar_db(self):
         try:

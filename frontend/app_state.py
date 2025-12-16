@@ -1,9 +1,30 @@
 import requests
 import os
 import sys
+import json
 
 SERVER_IP = "192.168.0.105"
 PORT = 5000
+
+CONFIG_FILE = os.path.join(os.path.dirname(__file__), "config.json")
+
+def load_config():
+    if os.path.exists(CONFIG_FILE):
+        try:
+            with open(CONFIG_FILE, 'r') as f:
+                config = json.load(f)
+                return config.get('server_ip', SERVER_IP)
+        except:
+            pass
+    return SERVER_IP
+
+def save_config():
+    config = {'server_ip': GlobalState.server_ip}
+    try:
+        with open(CONFIG_FILE, 'w') as f:
+            json.dump(config, f)
+    except:
+        pass
 
 def detect_api_url():
     try:
@@ -12,13 +33,14 @@ def detect_api_url():
             return f"http://127.0.0.1:{PORT}"
     except:
         pass
+    server_ip = load_config()
     try:
-        r = requests.get(f"http://{SERVER_IP}:{PORT}/api/auth/ping", timeout=1.0)
+        r = requests.get(f"http://{server_ip}:{PORT}/api/auth/ping", timeout=1.0)
         if r.ok:
-            return f"http://{SERVER_IP}:{PORT}"
+            return f"http://{server_ip}:{PORT}"
     except:
         pass
-    return f"http://{SERVER_IP}:{PORT}"
+    return f"http://{server_ip}:{PORT}"
 
 API_BASE = detect_api_url()
 
@@ -35,3 +57,10 @@ class GlobalState:
     usuario = None
     role= None
     is_admin = False
+    server_ip = load_config()
+
+def set_server_ip(new_ip):
+    GlobalState.server_ip = new_ip
+    save_config()
+    global API_BASE
+    API_BASE = detect_api_url()

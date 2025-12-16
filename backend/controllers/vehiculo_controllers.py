@@ -174,6 +174,7 @@ def eliminar_vehiculo(id_vehiculo, descripcion=None, usuario_id=None):
     db.session.commit()
     return True
 
-
-
+def buscar_vehiculos_por_placa(placa_parcial):
+    vehiculos = Vehiculo.query.filter(Vehiculo.placa.ilike(f"%{placa_parcial}%")).all()
+    return [_serialize_vehiculo(v) for v in vehiculos]
 

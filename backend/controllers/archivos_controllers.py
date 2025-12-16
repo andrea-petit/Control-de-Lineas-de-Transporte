@@ -610,6 +610,11 @@ def generar_reporte_excel_bytes(municipios=None, combustible=None, grupo=None, t
 
 
 
+    ws.print_options.fitToPage = True
+    ws.print_options.fitToWidth = 1
+    ws.print_options.fitToHeight = 1
+    ws.page_setup.orientation = 'landscape'  
+
     out = io.BytesIO()
     wb.save(out)
     out.seek(0)

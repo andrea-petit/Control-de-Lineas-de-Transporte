@@ -6,7 +6,8 @@ from controllers.vehiculo_controllers import (
     obtener_vehiculo,
     crear_vehiculo,
     editar_vehiculo,
-    eliminar_vehiculo
+    eliminar_vehiculo,
+    buscar_vehiculos_por_placa
 )
 from sqlalchemy import inspect
 from flask_jwt_extended import jwt_required, get_jwt_identity
@@ -150,7 +151,12 @@ def delete_vehiculo(id_vehiculo):
         traceback.print_exc()
         return jsonify({"error": "Error interno", "detail": str(e)}), 500
 
-
-
-
+@vehiculo_bp.route('/vehiculos/buscar/<placa>', methods=['GET'])
+def buscar_vehiculos(placa):
+    try:
+        vehiculos = buscar_vehiculos_por_placa(placa)
+        return jsonify(vehiculos or []), 200
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": "Error interno", "detail": str(e)}), 500
 

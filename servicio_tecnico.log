@@ -25,3 +25,21 @@ WHERE choferes.cedula = %(cedula_1)s
 2025-12-02 16:13:04,504 - WARNING - 404 Not Found: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
 2025-12-10 18:40:20,459 - WARNING - 404 Not Found: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
 2025-12-10 19:08:24,595 - WARNING - 404 Not Found: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-12-15 14:26:05,472 - ERROR - ERROR en /api/auth/eliminar/31240614 con args {}: (psycopg2.errors.ForeignKeyViolation) update o delete en «usuarios» viola la llave foránea «log_cambios_usuario_id_fkey» en la tabla «log_cambios»
+DETAIL:  La llave (id_usuario)=(31240614) todavía es referida desde la tabla «log_cambios».
+
+[SQL: DELETE FROM usuarios WHERE usuarios.id_usuario = %(id_usuario)s]
+[parameters: {'id_usuario': 31240614}]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2025-12-15 14:26:08,957 - ERROR - ERROR en /api/auth/eliminar/31240614 con args {}: (psycopg2.errors.ForeignKeyViolation) update o delete en «usuarios» viola la llave foránea «log_cambios_usuario_id_fkey» en la tabla «log_cambios»
+DETAIL:  La llave (id_usuario)=(31240614) todavía es referida desde la tabla «log_cambios».
+
+[SQL: DELETE FROM usuarios WHERE usuarios.id_usuario = %(id_usuario)s]
+[parameters: {'id_usuario': 31240614}]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2025-12-15 14:26:52,486 - ERROR - ERROR en /api/auth/eliminar/31240614 con args {}: (psycopg2.errors.ForeignKeyViolation) update o delete en «usuarios» viola la llave foránea «log_cambios_usuario_id_fkey» en la tabla «log_cambios»
+DETAIL:  La llave (id_usuario)=(31240614) todavía es referida desde la tabla «log_cambios».
+
+[SQL: DELETE FROM usuarios WHERE usuarios.id_usuario = %(id_usuario)s]
+[parameters: {'id_usuario': 31240614}]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)

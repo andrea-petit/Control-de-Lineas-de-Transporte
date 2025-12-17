@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
-    QComboBox, QTableWidget, QTableWidgetItem, QMessageBox, QInputDialog, QHeaderView, QAbstractItemView
+    QComboBox, QTableWidget, QTableWidgetItem, QMessageBox, QInputDialog, QHeaderView, QAbstractItemView, QLineEdit
 )
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor, QPalette
@@ -18,12 +18,31 @@ class VehiculosWindow(QWidget):
         self.setWindowTitle("Vehículos")
         self.resize(1100, 620)
         self.vehiculos_cache = []
+        self.lineas_dict = {}  # Diccionario para mapear ID de línea a nombre
         self.setup_ui()
         self.cargar_lineas()
         self.setStyleSheet(estilos_paginas)
 
     def setup_ui(self):
         layout = QVBoxLayout(self)
+
+        search_layout = QHBoxLayout()
+        search_layout.setSpacing(6)
+        self.txt_search_placa = QLineEdit()
+        self.txt_search_placa.setPlaceholderText("Buscar por placa (ej: ABC123)")
+        self.txt_search_placa.setFixedWidth(200)
+        self.txt_search_placa.returnPressed.connect(self.buscar_por_placa)
+        btn_search = QPushButton("Buscar")
+        btn_search.setFixedHeight(28)
+        btn_search.clicked.connect(self.buscar_por_placa)
+        btn_clear = QPushButton("Limpiar")
+        btn_clear.setFixedHeight(28)
+        btn_clear.clicked.connect(self.clear_search)
+        search_layout.addWidget(self.txt_search_placa)
+        search_layout.addWidget(btn_search)
+        search_layout.addWidget(btn_clear)
+
+        layout.addLayout(search_layout)
 
         top = QHBoxLayout()
         lbl = QLabel("Seleccionar Línea:")
@@ -89,15 +108,23 @@ class VehiculosWindow(QWidget):
 
 
     def cargar_lineas(self):
-        headers = {"Authorization": f"Bearer {GlobalState.token}"}
+        headers = {"Authorization": f"Bearer {GlobalState.token}"} if getattr(GlobalState, "token", None) else {}
         try:
             r = requests.get(f"{API_BASE}/api/lineas", headers=headers, timeout=6)
             if r.ok:
                 lineas = r.json()
                 self.combo_lineas.clear()
                 self.combo_lineas.addItem("Todas", None)
+                self.lineas_dict = {l["id"]: l["nombre_organizacion"] for l in lineas}
                 for l in lineas:
                     self.combo_lineas.addItem(l["nombre_organizacion"], l["id"])
+            else:
+                detalle = r.text
+                try:
+                    detalle = r.json()
+                except Exception:
+                    pass
+                QMessageBox.warning(self, "Error", f"No se pudieron cargar las líneas ({r.status_code}): {detalle}")
         except Exception as e:
             QMessageBox.critical(self, "Error", f"No se pudo conectar: {e}")
 
@@ -135,7 +162,8 @@ class VehiculosWindow(QWidget):
 
         for row, v in enumerate(vehiculos):
             vid = v.get("id_vehiculo") or v.get("id")
-            linea = v.get("nombre_linea") or v.get("nombre_organizacion", "")
+            linea_id = v.get("id_linea") or v.get("linea_id")
+            linea = v.get("linea_nombre_organizacion") or self.lineas_dict.get(linea_id, "")
             chofer_id = v.get("chofer_id")
 
             datos = [
@@ -258,4 +286,27 @@ class VehiculosWindow(QWidget):
                 self.cargar_vehiculos_por_linea()
         except Exception as e:
             QMessageBox.critical(self, "Error", f"No se pudo conectar: {e}")
+
+    def buscar_por_placa(self):
+        placa = (self.txt_search_placa.text() or "").strip()
+        if not placa:
+            QMessageBox.warning(self, "Placa requerida", "Ingrese la placa a buscar.")
+            return
+        headers = {"Authorization": f"Bearer {getattr(GlobalState, 'token', None)}"} if getattr(GlobalState, "token", None) else {}
+        try:
+            r = requests.get(f"{API_BASE}/api/vehiculos/buscar/{placa}", headers=headers, timeout=6)
+            if r.ok:
+                datos = r.json() or []
+                if isinstance(datos, dict):
+                    datos = [datos]
+                self.label_titulo.setText(f"Vehículos - Placa: {placa}")
+                self.mostrar_vehiculos(datos)
+                return
+        except Exception:
+            pass
+        QMessageBox.information(self, "No encontrado", f"No se encontraron vehículos para la placa '{placa}'.")
+
+    def clear_search(self):
+        self.txt_search_placa.clear()
+        self.cargar_vehiculos_por_linea()
 

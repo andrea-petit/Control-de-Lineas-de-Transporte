@@ -18,7 +18,7 @@ class MenuWindow(QMainWindow):
     def menu_ui(self):
         self.setGeometry(150, 40, 1050, 670)
         self.setWindowTitle("Menu | Control de Lineas | I.M.T.T")
-        self.setWindowIcon(QIcon(resources_path("frontend/icons/bus.png")))
+        self.setWindowIcon(QIcon(resources_path("icons/bus.png")))
 
         self.showMaximized()
 
@@ -28,13 +28,11 @@ class MenuWindow(QMainWindow):
         
         self.frame_header = QFrame()
 
-        # panel de botones: ancho máximo inicial y estado collapsed
         self.frame_buttons.setMaximumWidth(240)
-        self.frame_buttons.setMinimumWidth(65)   # ancho cuando está retraído
+        self.frame_buttons.setMinimumWidth(65)   
         self.buttons_collapsed = False
         self._panel_anim = None
 
-        # botón pequeño en el header para volver a abrir/ocultar el panel
         self.menu_toggle_btn = QPushButton("☰")
         self.menu_toggle_btn.setStyleSheet("background-color: transparent; border: none; font-size: 20px;")
         self.menu_toggle_btn.setFixedSize(36, 36)
@@ -70,7 +68,6 @@ class MenuWindow(QMainWindow):
         self.setup_buttons_frames()
         self.setStyleSheet(estilos_menu)
         
-        # Mostrar mensaje de bienvenida en frame_window
         self.mostrar_bienvenida()
 
 
@@ -84,28 +81,22 @@ class MenuWindow(QMainWindow):
         self.btn_logout = QPushButton("Cerrar sesión")
         
         icons = {
-            self.button1: resources_path("frontend/icons/lineas3.png"),
-            self.button2: resources_path("frontend/icons/vehiculos2.png"),
-            self.button3: resources_path("frontend/icons/choferes3.png"),
-            self.button4: resources_path("frontend/icons/historial2.png"),
-            self.button5: resources_path("frontend/icons/archivo2.png"),
-            self.button6: resources_path("frontend/icons/adminuser2.png"),
-            self.btn_logout: resources_path("frontend/icons/cerrar-sesion.png"),
+            self.button1: resources_path("icons/lineas3.png"),
+            self.button2: resources_path("icons/vehiculos2.png"),
+            self.button3: resources_path("icons/choferes3.png"),
+            self.button4: resources_path("icons/historial2.png"),
+            self.button5: resources_path("icons/archivo2.png"),
+            self.button6: resources_path("icons/adminuser2.png"),
+            self.btn_logout: resources_path("icons/cerrar-sesion.png"),
         }
         for btn, path in icons.items():
             icon = QIcon(path) if path and QIcon(path) else QIcon()
-            # guardar icono y texto original para restaurar después
             btn.setProperty("full_text", btn.text())
             btn.setProperty("full_icon", icon)
-            # no establecemos icono aquí para que, con el panel expandido, no se vea
             btn.setIcon(QIcon())
             btn.setIconSize(QSize(28, 28))
-            # mantener texto alineado a la izquierda por defecto
             btn.setStyleSheet(btn.styleSheet() + " QPushButton { text-align: center; }")
         
-
-        #self.button5 = QPushButton("cerrar Sesion")
-        #self.button5.clicked.connect(self.close)
 
         self.button1.clicked.connect(self.abrir_lineas)
         self.button2.clicked.connect(self.cargar_vehiculos_por_linea)
@@ -115,7 +106,6 @@ class MenuWindow(QMainWindow):
         self.button5.clicked.connect(self.abrir_archivos)
         self.btn_logout.clicked.connect(self.logout)
 
-        # guardar el texto "completo" original en una propiedad para poder restaurarlo
         for btn in (self.button1, self.button2, self.button3, self.button4, self.button5, self.button6, self.btn_logout):
             btn.setProperty("full_text", btn.text())
 
@@ -131,10 +121,8 @@ class MenuWindow(QMainWindow):
             btn.setStyleSheet(btnStyle)
             self.buttons_layout.addWidget(btn)
         self.frame_buttons.setLayout(self.buttons_layout)
-        # empuja los botones hacia arriba y deja espacio abajo para el label de usuario
         self.buttons_layout.addStretch()
 
-        # Mostrar nombre y rol del usuario en la parte inferior
         username = getattr(GlobalState, "username", getattr(GlobalState, "usuario", "Invitado"))
         role = getattr(GlobalState, "role", "Usuario")
         self.user_label = QLabel()
@@ -144,8 +132,6 @@ class MenuWindow(QMainWindow):
         self.user_label.setStyleSheet("padding: 4px;")
         self.buttons_layout.addWidget(self.user_label)
 
-        # Botón de cerrar sesión (debajo del user_label)
-        
         self.btn_logout.setCursor(Qt.PointingHandCursor)
         self.btn_logout.setFixedHeight(44)
         self.btn_logout.setStyleSheet(btnStyle)
@@ -156,7 +142,6 @@ class MenuWindow(QMainWindow):
         header_layout.setContentsMargins(16, 8, 16, 8)
         header_layout.setSpacing(12)
 
-        # añadir el botón toggle al header (izquierda)
         header_layout.addWidget(self.menu_toggle_btn, 0, Qt.AlignVCenter)
 
         title_container = QWidget()
@@ -174,10 +159,9 @@ class MenuWindow(QMainWindow):
         header_layout.addWidget(title_container, Qt.AlignVCenter)
         header_layout.addStretch(0)
 
-        # Botón Acerca de en el header (derecha)
         self.btn_about = QPushButton("Acerca de")
         self.btn_about.setCursor(Qt.PointingHandCursor)
-        self.btn_about.setIcon(QIcon(resources_path("frontend/icons/info.png")))
+        self.btn_about.setIcon(QIcon(resources_path("icons/info.png")))
         self.btn_about.setStyleSheet("""
             QPushButton {
                 background-color: transparent;
@@ -196,21 +180,14 @@ class MenuWindow(QMainWindow):
 
 
     def toggle_buttons_panel(self, collapsed=None):
-        """
-        Animación para retraer/expandir el panel de botones.
-        Si collapsed es None invierte el estado, si es True fuerza retraer.
-        """
         if collapsed is None:
-            # Invertir el estado actual
             collapsed = not self.buttons_collapsed
 
         start = self.frame_buttons.width()
         end = self.frame_buttons.minimumWidth() if collapsed else 240
 
-        # Actualizar el estado ANTES de la animación
         self.buttons_collapsed = collapsed
 
-        # cancelar animación anterior si existe
         if self._panel_anim is not None and self._panel_anim.state() == QPropertyAnimation.Running:
             self._panel_anim.stop()
 
@@ -222,31 +199,27 @@ class MenuWindow(QMainWindow):
         anim.start()
         self._panel_anim = anim
 
-        # cambiar texto / icono según estado
         for btn in (self.button1, self.button2, self.button3, self.button4, self.button5, self.button6, self.btn_logout):
             full = btn.property("full_text") or ""
             icon = btn.property("full_icon") or QIcon()
             if collapsed:
-                # ocultar texto y mostrar icono centrado
                 btn.setProperty("collapsed_text", btn.text() or full)
-                btn.setText("")                 # quitar texto
-                btn.setIcon(icon)               # mostrar icono
+                btn.setText("")                 
+                btn.setIcon(icon)               
                 btn.setToolTip(full)
                 btn.setStyleSheet(btn.styleSheet() + " QPushButton { text-align: center; }")
             else:
-                # restaurar texto y ocultar icono
                 btn.setText(full)
-                btn.setIcon(QIcon())            # ocultar icono cuando esté expandido
+                btn.setIcon(QIcon())            
                 btn.setToolTip("")
                 btn.setStyleSheet(btn.styleSheet() + " QPushButton { text-align: center; }")
         
-        # Ocultar/mostrar el label de usuario según el estado
+        
         if hasattr(self, 'user_label'):
             self.user_label.setVisible(not collapsed)
 
 
     def mostrar_bienvenida(self):
-        """Muestra un mensaje de bienvenida con el nombre del usuario en frame_window"""
         if self.frame_window.layout() is None:
             self.frame_window.setLayout(QVBoxLayout())
         layout = self.frame_window.layout()
@@ -256,17 +229,14 @@ class MenuWindow(QMainWindow):
             if w:
                 w.setParent(None)
         
-        # Obtener nombre del usuario
         username = getattr(GlobalState, "username", getattr(GlobalState, "usuario", "Usuario"))
         
-        # Crear widget de bienvenida
         welcome_widget = QWidget()
         welcome_widget.setStyleSheet("background-color: white; border-radius: 10px;")
         welcome_layout = QVBoxLayout(welcome_widget)
         welcome_layout.setAlignment(Qt.AlignCenter)
         welcome_layout.setContentsMargins(40, 40, 40, 40)
         
-        # Mensaje de bienvenida
         lbl_welcome = QLabel(f"¡Bienvenid@, {username}!")
         lbl_welcome.setStyleSheet("font-size: 36px; font-weight: bold; color: #012d51; margin-bottom: 20px;")
         lbl_welcome.setAlignment(Qt.AlignCenter)
@@ -280,7 +250,6 @@ class MenuWindow(QMainWindow):
         
         layout.addWidget(welcome_widget)
 
-    # Llamar a toggle al abrir una sección para retraer el menú automáticamente
     def abrir_lineas(self):
         if self.frame_window.layout() is None:
             self.frame_window.setLayout(QVBoxLayout())
@@ -293,7 +262,6 @@ class MenuWindow(QMainWindow):
 
         self.lineas_window = LineasWindow()
         layout.addWidget(self.lineas_window)
-        # retraer panel al seleccionar
         self.toggle_buttons_panel(collapsed=True)
 
     def cargar_vehiculos_por_linea(self):
@@ -377,7 +345,6 @@ class MenuWindow(QMainWindow):
             if w:
                 w.setParent(None)
         
-        # Area de desplazamiento para asegurar que todo sea visible
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
         scroll.setStyleSheet("background: transparent; border: none;")
@@ -389,7 +356,7 @@ class MenuWindow(QMainWindow):
         center_layout.setContentsMargins(10, 10, 10, 10)
 
         container = QWidget()
-        container.setMaximumWidth(700)  # Más ancho para mejor distribución
+        container.setMaximumWidth(700) 
         container.setMinimumWidth(500)
         container.setStyleSheet("""
             QWidget {
@@ -417,12 +384,9 @@ class MenuWindow(QMainWindow):
         lbl_desc.setStyleSheet("font-size: 16px; color: #444; line-height: 100%;")
         lbl_desc.setAlignment(Qt.AlignCenter)
 
-        # Sección de créditos
         lbl_unefa = QLabel("Realizado por los estudiantes de la UNEFA:")
         lbl_unefa.setStyleSheet("font-size: 18px; font-weight: bold; color: #012d51; margin-top: 40px;")
         lbl_unefa.setAlignment(Qt.AlignCenter)
-
-        # Usar un Grid para los nombres para ahorrar espacio vertical y que se vean todos bien
         names_widget = QWidget()
         names_layout = QGridLayout(names_widget)
         
@@ -461,10 +425,6 @@ class MenuWindow(QMainWindow):
         self.toggle_buttons_panel(collapsed=True)
 
     def logout(self):
-        """
-        Limpia el estado global, abre la ventana de login y cierra el menú.
-        """
-        # limpiar estado de la aplicación
         GlobalState.token = None
         GlobalState.usuario = None
         GlobalState.is_admin = False
@@ -472,24 +432,21 @@ class MenuWindow(QMainWindow):
             if hasattr(GlobalState, attr):
                 setattr(GlobalState, attr, None)
 
-        # intentar abrir la ventana de login
         try:
             from control_app import LoginWindow
             self.login = LoginWindow()
-            # si tu LoginWindow expone setup_ui, ejecutarlo
             if hasattr(self.login, "setup_ui"):
                 self.login.setup_ui()
             self.login.show()
         except Exception as e:
             AlertDialog.critical(self, "Error", f"No se pudo abrir Login: {e}")
-        # cerrar ventana de menú
         self.close()
 
 
 if __name__ == "__main__":
     from control_app import LoginWindow 
     app = QApplication(sys.argv)
-    app.setWindowIcon(QIcon(resources_path("frontend/img/bus.png"))) 
+    app.setWindowIcon(QIcon(resources_path("img/bus.png"))) 
     window = MenuWindow()
     window.menu_ui()
     window.show()

@@ -8,6 +8,21 @@ PORT = 5000
 
 CONFIG_FILE = os.path.join(os.path.dirname(__file__), "config.json")
 
+def get_base_dir():
+    if getattr(sys, 'frozen', False):
+        return os.path.dirname(sys.executable)
+    else:
+        return os.path.dirname(os.path.abspath(__file__))
+
+def get_config_path():
+    base_dir = get_base_dir()
+    return os.path.join(base_dir, "config.json")
+
+CONFIG_FILE = get_config_path()
+
+
+
+
 def load_config():
     if os.path.exists(CONFIG_FILE):
         try:
@@ -16,15 +31,25 @@ def load_config():
                 return config.get('server_ip', SERVER_IP)
         except:
             pass
-    return SERVER_IP
+            return SERVER_IP
+    else:
+        default_config = {'server_ip': SERVER_IP}
+        try:
+            with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
+                json.dump(default_config, f, indent=4)
+        except:
+            pass
+        return SERVER_IP
 
 def save_config():
     config = {'server_ip': GlobalState.server_ip}
     try:
         with open(CONFIG_FILE, 'w') as f:
             json.dump(config, f)
+            return True
     except:
         pass
+        return False
 
 def detect_api_url():
     try:
@@ -48,7 +73,6 @@ API_BASE = detect_api_url()
 def resources_path(relative_path):
     if hasattr(sys, "_MEIPASS"):
         return os.path.join(sys._MEIPASS, relative_path)
-    # Use the directory containing this file as the base
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     return os.path.join(base_dir, relative_path)
 
@@ -64,3 +88,9 @@ def set_server_ip(new_ip):
     save_config()
     global API_BASE
     API_BASE = detect_api_url()
+
+def refresh_api_base():
+    global API_BASE
+    GlobalState.server_ip = load_config()
+    API_BASE = detect_api_url()
+    return API_BASE

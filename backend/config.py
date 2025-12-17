@@ -20,4 +20,6 @@ class Config:
     MAIL_USE_SSL= False
     MAIL_DEFAULT_SENDER = "optcontroldelineas@gmail.com"
     REPORT_LOGO_LEFT = "frontend/img/LogoIMTT TR.png"
-    REPORT_LOGO_RIGHT = "frontend/img/LogoCariruB.png"
+    REPORT_LOGO_RIGHT_CARIRUBANA = "frontend/img/LogoCariruB.png"
+    REPORT_LOGO_RIGHT_LT = "frontend\img\logo_LT_FC.png"
+

@@ -45,7 +45,8 @@ styleN = styles["Normal"]
 
 styleH = styles["Heading1"]
 REPORT_LOGO_LEFT = Config.REPORT_LOGO_LEFT
-REPORT_LOGO_RIGHT = Config.REPORT_LOGO_RIGHT
+REPORT_LOGO_RIGHT_CARIRUBANA = Config.REPORT_LOGO_RIGHT_CARIRUBANA
+REPORT_LOGO_RIGHT_LT = Config.REPORT_LOGO_RIGHT_LT
 
 def _query_vehiculos(municipios=None, combustible=None, grupo=None, max_limit=5000):
     q = db.session.query(Vehiculo).join(LineaTransporte).join(municicipio)
@@ -165,6 +166,20 @@ def generar_reporte_pdf_bytes(municipios=None, combustible=None, grupo=None, tit
     except:
         img_left = Paragraph("", ParagraphStyle("x"))
 
+    if grupo and grupo.upper() == "CARIRUBANA":
+        REPORT_LOGO_RIGHT = REPORT_LOGO_RIGHT_CARIRUBANA
+        try:
+            img_right = Image(REPORT_LOGO_RIGHT, width=100, height=100)
+        except:
+            img_right = Paragraph("", ParagraphStyle("x"))
+    else:
+        REPORT_LOGO_RIGHT = REPORT_LOGO_RIGHT_LT
+        try:
+            img_right = Image(REPORT_LOGO_RIGHT, width=180, height=150)
+        except:
+            img_right = Paragraph("", ParagraphStyle("x"))
+
+
     try:
         img_right = Image(REPORT_LOGO_RIGHT, width=100, height=100)
     except:
@@ -227,12 +242,18 @@ def generar_reporte_pdf_bytes(municipios=None, combustible=None, grupo=None, tit
         ("VALIGN", (0,0), (-1,-1), "MIDDLE"),
     ]))
 
-    bloque_central = [
-        Paragraph("INSTITUTO MUNICIPAL DE TRÁNSITO Y TRANSPORTE PÚBLICO DE PASAJEROS DEL MUNICIPIO CARIRUBANA", style_black),
-        Paragraph("REGISTRO DE ORGANIZACIONES DE TRANSPORTE PÚBLICO URBANO DEL MUNICIPIO CARIRUBANA", style_red),
-        fila_mes_modalidad
-    ]
-
+    if grupo and grupo.upper() == "CARIRUBANA":
+        bloque_central = [
+            Paragraph("INSTITUTO MUNICIPAL DE TRÁNSITO Y TRANSPORTE PÚBLICO DE PASAJEROS DEL MUNICIPIO CARIRUBANA", style_black),
+            Paragraph("REGISTRO DE ORGANIZACIONES DE TRANSPORTE PÚBLICO URBANO DEL MUNICIPIO CARIRUBANA", style_red),
+            fila_mes_modalidad
+        ]
+    else:
+        bloque_central = [
+            Paragraph("REGISTRO DE ORGANIZACIONES DE TRANSPORTE PUBLICO URBANO", style_red),
+            Paragraph("MUNICIPIO FALCÓN Y LOS TAQUES", style_red),
+            fila_mes_modalidad
+        ]
     # Encabezado con logos y bloque central
     encabezado = Table([
         [img_left, bloque_central, img_right]
@@ -411,11 +432,22 @@ def generar_reporte_excel_bytes(municipios=None, combustible=None, grupo=None, t
             cell = ws.cell(row=row, column=col)
             cell.border = NO_BORDER
 
-    ws["B1"].value = "INSTITUTO MUNICIPAL DE TRÁNSITO Y TRANSPORTE PÚBLICO DE PASAJEROS DEL MUNICIPIO CARIRUBANA"
+    if grupo and grupo.upper() == "CARIRUBANA":
+        REPORT_LOGO_RIGHT = REPORT_LOGO_RIGHT_CARIRUBANA
+    else:
+        REPORT_LOGO_RIGHT = REPORT_LOGO_RIGHT_LT
+    
+    if grupo and grupo.upper() == "CARIRUBANA":
+        ws["B1"].value = "INSTITUTO MUNICIPAL DE TRÁNSITO Y TRANSPORTE PÚBLICO DE PASAJEROS DEL MUNICIPIO CARIRUBANA"
+    else:
+        ws["B1"].value = "REGISTRO DE ORGANIZACIONES DE TRANSPORTE PUBLICO URBANO"
     ws["B1"].font = Font(name="TimesNewRoman", bold=True, size=20)
     ws["B1"].alignment = Alignment(horizontal="center", vertical="center")
 
-    ws["B2"].value = "REGISTRO DE ORGANIZACIONES DE TRANSPORTE PÚBLICO URBANO DEL MUNICIPIO CARIRUBANA"
+    if grupo and grupo.upper() == "CARIRUBANA":
+        ws["B2"].value = "REGISTRO DE ORGANIZACIONES DE TRANSPORTE PÚBLICO URBANO DEL MUNICIPIO CARIRUBANA"
+    else:
+        ws["B2"].value = "MUNICIPIO FALCÓN Y LOS TAQUES"
     ws["B2"].font = Font(name="TimesNewRoman", bold=True, size=18, color="FFC60505")  # rojo oscuro
     ws["B2"].alignment = Alignment(horizontal="center", vertical="center")
 
@@ -436,18 +468,32 @@ def generar_reporte_excel_bytes(municipios=None, combustible=None, grupo=None, t
         ws["A1"].alignment = Alignment(horizontal="right", vertical="center")
         ws["A1"].font = Font(bold=True, size=10)
 
-    if REPORT_LOGO_RIGHT and os.path.exists(REPORT_LOGO_RIGHT):
-        add_image_right_edge(
-            ws,
-            REPORT_LOGO_RIGHT,
-            row=1,
-            img_width_px=180,
-            img_height_px=180
-        )
+    if grupo and grupo.upper() == "CARIRUBANA":
+        if REPORT_LOGO_RIGHT and os.path.exists(REPORT_LOGO_RIGHT):
+            add_image_right_edge(
+                ws,
+                REPORT_LOGO_RIGHT,
+                row=1,
+                img_width_px=180,
+                img_height_px=180
+            )
+        else:
+            ws["O1"].value = "LOGO"
+            ws["O1"].alignment = Alignment(horizontal="left", vertical="center")
+            ws["O1"].font = Font(bold=True, size=10)
     else:
-        ws["O1"].value = "LOGO"
-        ws["O1"].alignment = Alignment(horizontal="left", vertical="center")
-        ws["O1"].font = Font(bold=True, size=10)
+        if REPORT_LOGO_RIGHT and os.path.exists(REPORT_LOGO_RIGHT):
+            add_image_right_edge(
+                ws,
+                REPORT_LOGO_RIGHT,
+                row=1,
+                img_width_px=250,
+                img_height_px=180
+            )
+        else:
+            ws["O1"].value = "LOGO"
+            ws["O1"].alignment = Alignment(horizontal="left", vertical="center")
+            ws["O1"].font = Font(bold=True, size=10)
 
 
     # Tabla principal

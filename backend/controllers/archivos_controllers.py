@@ -87,12 +87,11 @@ def add_image_right_edge(ws, image_path, row, img_width_px, img_height_px):
     img.width = img_width_px
     img.height = img_height_px
 
-    col_letter = "O"  # última columna real
+    col_letter = "O"
     col_idx = column_index_from_string(col_letter) - 1
 
-    # ancho real de la columna en píxeles (aprox)
     col_width = ws.column_dimensions[col_letter].width or 10
-    col_width_px = int(col_width * 7)  # conversión Excel → px
+    col_width_px = int(col_width * 7)
 
     dx = max(col_width_px - img_width_px, 0)
 
@@ -123,9 +122,6 @@ def generar_reporte_pdf_bytes(municipios=None, combustible=None, grupo=None, tit
     from reportlab.lib.enums import TA_CENTER
     from reportlab.lib import colors
 
-    # =========================
-    # FUENTES (TIMES FORZADO)
-    # =========================
     FONT = "Times-Roman"
     FONT_BOLD = "Times-Bold"
     FONT_ITALIC = "Times-Italic"
@@ -158,9 +154,6 @@ def generar_reporte_pdf_bytes(municipios=None, combustible=None, grupo=None, tit
     mes = _MES_ES.get(datetime.now().month, "").upper()
     modalidad = "MASIVO (DIESEL)" if any(r.get("combustible") == "Diésel" for r in registros) else "MASIVOS / POR PUESTO / TAXI / MOTO TAXI"
 
-    # =========================
-    # LOGOS
-    # =========================
     try:
         img_left = Image(REPORT_LOGO_LEFT, width=120, height=100)
     except:
@@ -185,9 +178,6 @@ def generar_reporte_pdf_bytes(municipios=None, combustible=None, grupo=None, tit
     except:
         img_right = Paragraph("", ParagraphStyle("x"))
 
-    # =========================
-    # ESTILOS
-    # =========================
     title_style = ParagraphStyle(
         "title",
         fontName=FONT_BOLD,
@@ -211,10 +201,6 @@ def generar_reporte_pdf_bytes(municipios=None, combustible=None, grupo=None, tit
         alignment=TA_CENTER
     )
 
-    # =========================
-    # ENCABEZADO
-    # =========================
-    # Estilos diferenciados
     style_black = ParagraphStyle(
         "black",
         fontName=FONT_BOLD,
@@ -274,10 +260,6 @@ def generar_reporte_pdf_bytes(municipios=None, combustible=None, grupo=None, tit
     story.append(encabezado)
     story.append(Spacer(1, 20))
 
-
-    # =========================
-    # TABLA PRINCIPAL
-    # =========================
     headers = [
         "N°", "ORGANIZACIÓN", "PROPIETARIO", "C.I",
         "CHOFER", "C.I", "PLACA", "MARCA", "MODELO",
@@ -334,9 +316,6 @@ def generar_reporte_pdf_bytes(municipios=None, combustible=None, grupo=None, tit
     story.append(tabla)
     story.append(Spacer(1, 30))
 
-    # =========================
-    # RESUMEN (CLON EXCEL)
-    # =========================
     resumen = {}
     total = 0
 
@@ -407,28 +386,23 @@ def generar_reporte_excel_bytes(municipios=None, combustible=None, grupo=None, t
 
     texto_modalidad = "MASIVO (DIESEL)" if es_diesel else "MASIVOS / POR PUESTO / TAXI / MOTO TAXI"
 
-    # Ajuste de anchos de columna (A y O reservadas para logos; tabla va B..O)
     base_widths = [120, 120, 50, 120, 50, 60, 60,
-                   60, 38, 38, 120, 38, 80, 250]
-    excel_widths = [round(w * 0.24, 2) for w in base_widths]  # B..O
-    # Column A (logo izq) y O (logo der) con ancho fijo para que no se tape
+                    60, 38, 38, 120, 38, 80, 250]
+    excel_widths = [round(w * 0.24, 2) for w in base_widths]
     ws.column_dimensions["A"].width = 10
-    for i, w in enumerate(excel_widths, start=2):  # B=2 .. O=15
+    for i, w in enumerate(excel_widths, start=2):
         ws.column_dimensions[ws.cell(row=1, column=i).column_letter].width = w
     ws.column_dimensions["O"].width = max(ws.column_dimensions["O"].width, 10)
 
-    # Alturas del encabezado (fila 1 más alta para los logos)
     ws.row_dimensions[1].height = 60
     for r in (2, 3, 4):
         ws.row_dimensions[r].height = 25
-
-    # Encabezado
     ws.merge_cells("B1:O1")
     ws.merge_cells("B2:O2")
     ws.merge_cells("B4:D4")
     ws.merge_cells("H4:N4")
-    for row in range(1, 5):        # filas 1 a 4
-        for col in range(1, 16):   # columnas A a O
+    for row in range(1, 5):
+        for col in range(1, 16):
             cell = ws.cell(row=row, column=col)
             cell.border = NO_BORDER
 
@@ -495,17 +469,15 @@ def generar_reporte_excel_bytes(municipios=None, combustible=None, grupo=None, t
             ws["O1"].alignment = Alignment(horizontal="left", vertical="center")
             ws["O1"].font = Font(bold=True, size=10)
 
-
-    # Tabla principal
     start_row = 6
     headers = ["Nº", "ORGANIZACIÓN", "PROPIETARIO - NOMBRE Y APELLIDO", "C.I",
-               "CHOFER - NOMBRE Y APELLIDO", "C.I", "PLACA", "MARCA", "MODELO",
-               "Nº DE PUESTOS", "LITRAJE", "SINDICATO", "GRUPO", "MODALIDAD", "FIRMA"]
+                "CHOFER - NOMBRE Y APELLIDO", "C.I", "PLACA", "MARCA", "MODELO",
+                "Nº DE PUESTOS", "LITRAJE", "SINDICATO", "GRUPO", "MODALIDAD", "FIRMA"]
 
     ws.row_dimensions[start_row].height = 45
     thin = Side(border_style="thin", color="000000")
 
-    for col, h in enumerate(headers, start=1):  # columnas A..O (15)
+    for col, h in enumerate(headers, start=1):
         c = ws.cell(row=start_row, column=col, value=h)
         c.font = Font(name="TimesNewRoman", bold=True, size=10)
         c.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
@@ -517,8 +489,8 @@ def generar_reporte_excel_bytes(municipios=None, combustible=None, grupo=None, t
         ws.row_dimensions[row].height = 45
         firma = "INACTIVO - NO FIRMA" if r["estado"] in ("inactivo", "suspendido") else ""
         values = [i, r["linea"], r["propietario"], r["cedula_propietario"], r["chofer"], r["cedula_chofer"],
-                  r["placa"], r["marca"], r["modelo"], r["capacidad"], r["litraje"], r["sindicato"],
-                  r["grupo"], r["modalidad"], firma]
+                    r["placa"], r["marca"], r["modelo"], r["capacidad"], r["litraje"], r["sindicato"],
+                    r["grupo"], r["modalidad"], firma]
         for col, val in enumerate(values, start=1):
             c = ws.cell(row=row, column=col, value=val)
             c.font = Font(name="TimesNewRoman", italic=True, bold=True, size=12)
@@ -540,36 +512,27 @@ def generar_reporte_excel_bytes(municipios=None, combustible=None, grupo=None, t
             elif col == 13:  # GRUPO
                 c.font = Font(name="TimesNewRoman", size=23, italic=True, bold=True)
 
-  # =========================
-# RESUMEN DE LITRAJE
-# =========================
     resumen_start = start_row + len(registros) + 2
 
     thin = Side(border_style="thin", color="000000")
     border = Border(top=thin, left=thin, right=thin, bottom=thin)
-
-    # TÍTULO
     ws.merge_cells(start_row=resumen_start, start_column=1, end_row=resumen_start, end_column=7)
     c = ws.cell(row=resumen_start, column=1, value="RESUMEN DE LITRAJE POR SINDICATO")
     c.font = Font(name="TimesNewRoman", bold=True, size=16)
     c.alignment = Alignment(horizontal="center", vertical="center")
 
-    # ENCABEZADOS
     row_headers = resumen_start + 1
 
     ws.cell(row=row_headers, column=1, value="N°")
     ws.cell(row=row_headers, column=2, value="SINDICATOS")
     ws.cell(row=row_headers, column=3, value="LITROS")
 
-    # DIA ANTERIOR (4–5)
     ws.merge_cells(start_row=row_headers, start_column=4, end_row=row_headers, end_column=5)
     ws.cell(row=row_headers, column=4, value="DIA ANTERIOR")
 
-    # DIFERENCIA (6–7)
     ws.merge_cells(start_row=row_headers, start_column=6, end_row=row_headers, end_column=7)
     ws.cell(row=row_headers, column=6, value="DIFERENCIA")
 
-    # Estilos encabezados
     for col in (1, 2, 3, 4, 6):
         c = ws.cell(row=row_headers, column=col)
         c.font = Font(name="TimesNewRoman", bold=True, size=14)
@@ -580,11 +543,9 @@ def generar_reporte_excel_bytes(municipios=None, combustible=None, grupo=None, t
     ws.cell(row=row_headers, column=4).fill = PatternFill("solid", fgColor="BFBFBF")
     ws.cell(row=row_headers, column=6).fill = PatternFill("solid", fgColor="B7C4D3")
 
-    # Cerrar bordes de celdas “fantasma”
     ws.cell(row=row_headers, column=5).border = border
     ws.cell(row=row_headers, column=7).border = border
 
-    # CALCULAR RESUMEN
     resumen = {}
     total_litraje = 0
 
@@ -596,7 +557,6 @@ def generar_reporte_excel_bytes(municipios=None, combustible=None, grupo=None, t
         resumen[sindicato] = resumen.get(sindicato, 0) + litros
         total_litraje += litros
 
-    # FILAS
     row = row_headers + 1
     contador = 1
 
@@ -628,7 +588,6 @@ def generar_reporte_excel_bytes(municipios=None, combustible=None, grupo=None, t
         contador += 1
         row += 1
 
-    # TOTAL GENERAL
     ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=2)
     ws.cell(row=row, column=1, value="TOTAL LITRAJE")
 
@@ -676,5 +635,5 @@ def generar_reporte_excel_response(**params):
     buf = generar_reporte_excel_bytes(**params)
     filename = f"reporte_vehiculos_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.xlsx"
     return send_file(buf, mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                     as_attachment=True, download_name=filename)
+                        as_attachment=True, download_name=filename)
 

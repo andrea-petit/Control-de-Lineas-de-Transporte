@@ -30,9 +30,6 @@ def get_logs():
 @mantenimiento_bp.route("/mantenimiento/logs", methods=["POST"])
 @jwt_required()
 def post_log():
-    """
-    Registrar un nuevo log manualmente desde la UI o algún módulo.
-    """
     data = request.get_json() or {}
 
     mensaje = data.get("mensaje") or data.get("message") or ""

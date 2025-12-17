@@ -116,7 +116,7 @@ qcombostyle = '''
     }
 
     QComboBox::down-arrow {
-        image: url(''' + resources_path('frontend/img/flecha5.png').replace(os.sep, '/') + ''');
+        image: url(''' + resources_path('img/flecha5.png').replace(os.sep, '/') + ''');
         width: 15px;
         height: 15px;
     }
@@ -271,12 +271,15 @@ estilos_archivos = """
         color: black;
     }
     QComboBox::down-arrow {
-        image: url(''' + resources_path('frontend/img/flecha5.png').replace(os.sep, '/') + '''); /* si tienes icono, si no, usa default */
+        image: url(""" + resources_path('img/flecha3.png').replace(os.sep, '/') + """);
         width: 12px;
         height: 12px;
         color: black;
     }
-    /* Si no hay icono, Qt usa uno por defecto o podemos omitir la imagen */
+
+    QComboBox QAbstractItemView {
+        color: black;
+    }
 
     /* Botones generales */
     QPushButton {
@@ -324,6 +327,10 @@ estilos_formularios = """
         font-family: 'Segoe UI', sans-serif;
     }
     
+    QWidget {
+        background-color: #f7faff;
+    }
+
     QLabel {
         font-size: 14px;
         font-weight: bold; 
@@ -357,9 +364,14 @@ estilos_formularios = """
     }
 
     QComboBox::down-arrow {
-        image: url(''' + resources_path('frontend/img/flecha5.png').replace(os.sep, '/') + ''');
+        image: url(""" + resources_path('img/flecha3.png').replace(os.sep, '/') + """);
         width: 15px;
         height: 15px;
+    }
+    
+
+    QComboBox QAbstractItemView {
+        color: black;
     }
     
     QPushButton {
@@ -417,8 +429,13 @@ estilos_paginas = """
     }
     
     QComboBox::drop-down {
+        color: black;
         border: none;
         width: 20px;
+    }
+
+    QComboBox QAbstractItemView {
+        color: black;
     }
 
     QLineEdit {

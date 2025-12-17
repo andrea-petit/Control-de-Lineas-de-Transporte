@@ -14,8 +14,8 @@ class LoginWindow(QMainWindow):
         self.setFixedSize(490,480)
         self.setFixedSize(520,460)
         self.setWindowTitle("Login | Control de Lineas | I.M.T.T")
-        self.setWindowIcon(QIcon(resources_path("frontend/icons/bus.png").replace(os.sep, '/')))
-        self.setStyleSheet(f"background: url({resources_path('frontend/img/Fondo.jpg').replace(os.sep, '/')})")
+        self.setWindowIcon(QIcon(resources_path("icons/bus.png").replace(os.sep, '/')))
+        self.setStyleSheet(f"background: url({resources_path('img/Fondo.jpg').replace(os.sep, '/')})")
 
         self.frameTitle = QFrame(self)
         self.frameTitle.setGeometry(33,22,460,80)
@@ -26,12 +26,10 @@ class LoginWindow(QMainWindow):
         title_layout.setSpacing(12)
 
         self.frameLogoLeft = QLabel()
-        # ajustar altura para que quepa en el frameTitle (por ejemplo 60 en vez de 120)
         self.frameLogoLeft.setFixedSize(80, 55)
-        self.frameLogoLeft.setStyleSheet(f"border-image: url({resources_path('frontend/img/LogoIMTT TR.png').replace(os.sep, '/')}) 0 0 0 0 stretch stretch;")
+        self.frameLogoLeft.setStyleSheet(f"border-image: url({resources_path('img/LogoIMTT TR.png').replace(os.sep, '/')}) 0 0 0 0 stretch stretch;")
         self.frameLogoLeft.setScaledContents(True)
 
-        # añadir y forzar alineación vertical centrada
         title_layout.addWidget(self.frameLogoLeft)
         title_layout.setAlignment(self.frameLogoLeft, Qt.AlignVCenter)
 
@@ -41,7 +39,7 @@ class LoginWindow(QMainWindow):
 
         self.frameLogoRight = QLabel()
         self.frameLogoRight.setFixedSize(85,55)
-        self.frameLogoRight.setStyleSheet(f"border-image: url({resources_path('frontend/img/LogoCariruB.png').replace(os.sep, '/')}) 0 0 0 0 stretch stretch;")
+        self.frameLogoRight.setStyleSheet(f"border-image: url({resources_path('img/LogoCariruB.png').replace(os.sep, '/')}) 0 0 0 0 stretch stretch;")
         self.frameLogoRight.setScaledContents(True)
 
         title_layout.addWidget(self.frameLogoLeft, 0, Qt.AlignVCenter)
@@ -53,6 +51,7 @@ class LoginWindow(QMainWindow):
         self.frameInputs.setStyleSheet("background: white; border-radius: 10px")
 
         self.Id_usuario = QLineEdit()
+        self.Id_usuario.setValidator(QIntValidator(0, 999999999))
         self.Id_usuario.setPlaceholderText("Ingresa tu Cédula")
         self.Id_usuario.setStyleSheet(styles.estilos_login)
 
@@ -107,7 +106,6 @@ class LoginWindow(QMainWindow):
         self.layout = QVBoxLayout()
         self.layout.setContentsMargins(25,20,25,0)
         self.layout.setSpacing(16)
-        #self.layout.addWidget(QLabel("Tipo de usuario:"))
         self.layout.addWidget(self.tipo_usuario)
         self.layout.addWidget(self.Id_usuario)
         self.layout.addWidget(self.Password)
@@ -134,9 +132,6 @@ class LoginWindow(QMainWindow):
             self.Id_usuario.setEnabled(True)
 
     def do_login(self):
-        # We will use AlertDialog here
-        pass
-
         if self.tipo_usuario.currentText() == "Admin":
             cedula = "1"
         elif self.tipo_usuario.currentText()== "Servicio Técnico":
@@ -176,10 +171,8 @@ class LoginWindow(QMainWindow):
         GlobalState.role= rol
         GlobalState.is_admin = (rol.lower() == "admin")
 
-        # Success login
         AlertDialog.information(self, "Bienvenido", "Login correcto")
         
-        # Proceed
         try:
             if self.tipo_usuario.currentText() == "Servicio Técnico":
                 from windows.mantenimiento_window import MantenimientoWindow
@@ -206,7 +199,7 @@ class LoginWindow(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    app.setWindowIcon(QIcon(resources_path("frontend/img/autobus.png"))) 
+    app.setWindowIcon(QIcon(resources_path("img/autobus.png"))) 
     window = LoginWindow()
     window.setup_ui()
     window.show()

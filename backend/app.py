@@ -15,40 +15,6 @@ import os
 import logging
 from controllers.mantenimiento_controllers import handler as mantenimiento_handler
 
-
-
-# def create_app():
-#     app = Flask(__name__)
-#     app.config.from_object(Config)
-#     CORS(app)
-
-#     db.init_app(app)
-#     mail.init_app(app)
-
-#     app.register_blueprint(auth_bp, url_prefix='/api/auth')
-#     app.register_blueprint(linea_bp, url_prefix='/api')
-#     app.register_blueprint(vehiculo_bp, url_prefix='/api')
-#     app.register_blueprint(chofer_bp, url_prefix='/api')
-#     app.register_blueprint(cambios_bp, url_prefix='/api')
-#     app.register_blueprint(utils_bp, url_prefix='/api')
-#     app.register_blueprint(mantenimiento_bp, url_prefix='/api')
-
-#     app.config['JWT_SECRET_KEY'] = 'secret-key'
-#     jwt = JWTManager(app)
-
-#     app.logger.setLevel(logging.ERROR)
-#     if mantenimiento_handler not in app.logger.handlers:
-#         app.logger.addHandler(mantenimiento_handler)
-
-#     with app.app_context():
-#         from models import models 
-#         db.create_all()
-
-#     return app
-
-
-
-
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
